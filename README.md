@@ -1,4 +1,5 @@
-# Report_Check
+# Chart View
+- python 에서 fastapi, jinja2 를 사용하여 원시데이터를 정제하여 도표로 출력
 
 1. pip install requirements
 ```
