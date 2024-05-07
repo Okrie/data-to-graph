@@ -15,7 +15,7 @@ def loadJsonData(fileName: str = ''):
             
             # type 정리
             # type object to datetime
-            _convertTime = datetime.fromisoformat(tmp['_time'].iloc[0]).strftime('%Y-%m-%d %H:%M:%S')
+            _convertTime = datetime.fromisoformat(tmp['_time'].iloc[0][:-5]).strftime('%Y-%m-%d %H:%M:%S')
             tmp['_time'] = _convertTime
             
             # type object to integer
