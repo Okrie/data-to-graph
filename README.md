@@ -12,4 +12,9 @@ pip install -r requirements.txt
 3. run fastapi
 ```
 uvicorn app:app --reload --port=3000
-```
+```    
+
+
+4. connect localhost:3000/
+5. push 'submit' button
+6. Done     
