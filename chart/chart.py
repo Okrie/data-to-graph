@@ -43,7 +43,7 @@ class drawChart():
                 )
             plt.legend(loc='best')
             
-        # Line, Bar Graph
+        # Line & Bar Graph
         elif graphType == 'twin':
             dfGraph = data.T
             
@@ -73,7 +73,7 @@ class drawChart():
                 )
             ax1.legend(loc='best')
         
-        # Bar, pie Graph
+        # Bar, Pie Graph
         else:
             # Bar Graph
             if graphType == 'bar':

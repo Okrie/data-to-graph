@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from chart.chart import drawChart
 
-# uvicorn app:app --reload --port=3000
+
 
 
 templates = Jinja2Templates(directory="templates")
