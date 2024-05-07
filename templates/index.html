@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chart</title>
+</head>
+<body>
+    <form action="/" method="get">
+        <input type="submit">load</input>
+    </form>
+    
+    {% if images %}
+        {% for img in images%}
+            <div display='grid' style="float:left">
+                <img src={{img}} width=700> </img>
+            </div>
+        {% endfor%}
+    {% endif %}
+
+</body>
+</html>
