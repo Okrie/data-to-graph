@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from chart.chart import drawChart
 from texteditor.pythonPanel import panel
-from module.loadData import loadJsonDataForSpreadSheet
+from module.loadData import loadJsonDataForSpreadSheet, readLogData
 import json
 
 
@@ -25,6 +25,7 @@ async def home(request: Request):
     barchart = graph.drawGraph(graphType='bar')
     piechart = graph.drawGraph(graphType='pie')
     resultImages = [linechart, barchart, twinchart, piechart]
+    print(readLogData("access.log"))
     return templates.TemplateResponse("index.html",{"request":request, "images": resultImages, "count": len(resultImages)})
 
 
