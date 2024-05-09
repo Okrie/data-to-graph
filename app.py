@@ -39,5 +39,5 @@ async def home(request: Request):
 async def home(request: Request):
     data = loadJsonDataForSpreadSheet("1715043362_19")
     data = json.dumps(data)
-    print(data)
+    # data = f"<script> var data = {data}; consol.log(data); </script>"
     return templates.TemplateResponse("spreadsheet.html",{"request":request, "data": data})
