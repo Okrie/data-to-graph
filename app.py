@@ -6,7 +6,9 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from chart.chart import drawChart
-
+from texteditor.pythonPanel import panel
+from module.loadData import loadJsonDataForSpreadSheet
+import json
 
 
 
@@ -24,3 +26,18 @@ async def home(request: Request):
     piechart = graph.drawGraph(graphType='pie')
     resultImages = [linechart, barchart, twinchart, piechart]
     return templates.TemplateResponse("index.html",{"request":request, "images": resultImages, "count": len(resultImages)})
+
+
+@app.get("/editor", response_class=HTMLResponse)
+async def home(request: Request):
+    
+    return templates.TemplateResponse("editor.html",{"request":request})
+
+
+
+@app.get("/spreadsheet", response_class=HTMLResponse)
+async def home(request: Request):
+    data = loadJsonDataForSpreadSheet("1715043362_19")
+    data = json.dumps(data)
+    print(data)
+    return templates.TemplateResponse("spreadsheet.html",{"request":request, "data": data})

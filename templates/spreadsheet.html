@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2196f3">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap:; img-src * 'self' data: blob:;">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <title>Jspreadsheet</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.css" type="text/css" />
+</head>
+<body>
+    <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
+    <script src="https://jsuites.net/v4/jsuites.js"></script>
+    <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jexcel.css" type="text/css" />
+
+<div id="spreadsheet"></div>
+
+{{data}}
+
+<script>
+/*
+var data = [
+    ['Jazz', 'Honda', '2019-02-12', '', true, '$ 2.000,00', '#777700'],
+    ['Civic', 'Honda', '2018-07-11', '', true, '$ 4.000,01', '#007777'],
+];*/
+
+// HTML 엔티티 디코딩 함수
+function decodeEntities(encodedString) {
+    var textarea = document.createElement("textarea");
+    textarea.innerHTML = encodedString;
+    return textarea.value;
+}
+
+// 데이터 디코딩
+var tmp = {{data}}
+var data = tmp.map(row => row.map(item => decodeEntities(item)));
+
+jspreadsheet(document.getElementById('spreadsheet'), {
+    data:data,
+    columns: [
+        { type: 'text', title:'Car', width:120 },
+        { type: 'dropdown', title:'Make', width:200, source:[ "Alfa Romeo", "Audi", "Bmw" ] },
+        { type: 'calendar', title:'Available', width:200 },
+        { type: 'image', title:'Photo', width:120 },
+        { type: 'checkbox', title:'Stock', width:80 },
+        { type: 'numeric', title:'Price', width:100, mask:'$ #.##,00', decimal:',' },
+        { type: 'color', width:100, render:'square', }
+     ]
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce/dist/index.min.js"></script>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
-from module.loadData import loadJsonData
+from module.loadData import loadJsonDataForGraph
 from io import BytesIO
 
 class drawChart():
@@ -10,7 +10,7 @@ class drawChart():
     
     def __init__(self, jsonData):
         self._jsonData = jsonData
-        self._data = loadJsonData(self._jsonData)
+        self._data = loadJsonDataForGraph(self._jsonData)
         # print(self._data)
 
     # draw graph

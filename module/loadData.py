@@ -1,11 +1,12 @@
 import os
 import pandas as pd
+import json
 from io import BytesIO
 from datetime import datetime
 
 
 
-def loadJsonData(fileName: str = ''):
+def loadJsonDataForGraph(fileName: str = ''):
     df = pd.DataFrame()
     
     with open(f"{os.path.realpath('.')}/static/data/{fileName}.json", "rb") as f:
@@ -25,3 +26,15 @@ def loadJsonData(fileName: str = ''):
     df.set_index('_time', inplace=True)
     
     return df
+
+def loadJsonDataForSpreadSheet(fileName: str = ''):
+    
+    with open(f"{os.path.realpath('.')}/static/data/{fileName}.json", "r") as f:
+        data = []
+        for line in f:
+            tmp = json.loads(line)["result"]
+            tmplist = [i for i in tmp]
+            data.append(tmplist)
+            
+    return data
+    
