@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 # from texteditor.pythonPanel import panel
 from module.loadData import loadJsonDataForSpreadSheet, loadJsonDataForGraph
 from chart.chart import drawChart
-
+import os
 
 
 
@@ -24,8 +24,7 @@ async def home(request: Request):
     
     data = drawChart()
     # RestApi를 통해 json 을 받는 다는 가정으로 해당에 맞게 데이터 정제
-    import os
-    jsondata = open(f'{os.path.realpath('.')}/static/data/1715043362_19.json', 'rb')
+    jsondata = open(f"{os.path.realpath('.')}/static/data/1715043362_19.json", 'rb')
     jsondata = jsondata.read().decode('utf-8')
     jsondataList = jsondata.split('\n')[:-1]
     

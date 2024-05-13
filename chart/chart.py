@@ -16,18 +16,37 @@ class drawChart():
     
     def seperateJSONResult(self, originJsonData = None):
         # __jsonType = type(json.loads(originJsonData)["result"])
+
+        # 이 부분 다시 생각하기, 사이즈가 아닌 타입으로 구분하는 것이 더 나을듯
         __len = len(json.loads(originJsonData)["result"])
+        print(f'__len = {__len}')
         
         if __len == 1:
+            print(originJsonData)
             __jsondata = pd.read_json(originJsonData)["result"]
+            __jsondata = __jsondata.to_frame().T
         else:
-            __jsondata = pd.DataFrame()
+            __jsondata = pd.DataFrame.from_records(json.loads(originJsonData)['result'], index=None)
+            # for i in range(__len):
+            #     print(pd.DataFrame.from_records(json.loads(originJsonData)['result'], index='_time'))
+            #     print(json.loads(originJsonData)["result"][i])
+            #     tmp = pd.DataFrame().from_dict(json.loads(originJsonData)["result"][i])
+            #     __jsondata = pd.concat([__jsondata, tmp])
+            print(f'1 : \n{__jsondata}')
             for i in range(__len):
-                tmp = pd.read_json(json.loads(originJsonData)["result"])
-                __jsondata = pd.concat([__jsondata, tmp])
-                
-        __jsondata = __jsondata.to_frame().T
-        
+                print(f'11 : \n{__jsondata.iloc[i]}')
+                # __jsondata.iloc[i] = datetime.fromisoformat(__jsondata.iloc[i][:-5]).strftime('%Y-%m-%d %H:%M:%S')
+            # _convertTime = datetime.fromisoformat(__jsondata['_time'][:-5]).strftime('%Y-%m-%d %H:%M:%S')
+            # print(_convertTime)
+            # __jsondata['_time'] = _convertTime
+            __jsondata = __jsondata.T
+
+        print(f'2 : {__jsondata}')
+        # _convertTime = datetime.fromisoformat(__jsondata['_time'][:-5]).strftime('%Y-%m-%d %H:%M:%S')
+        # print(_convertTime)
+        # __jsondata['_time'] = _convertTime
+
+        # __jsondata = __jsondata.to_frame().T
         return __jsondata, __len
 
 
