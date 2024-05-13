@@ -1,25 +1,94 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import os
-from module.loadData import loadJsonDataForGraph
 from io import BytesIO
+import json
+from datetime import datetime
 
 class drawChart():
-    _jsonData = None
     _data : pd.DataFrame = None
     
-    def __init__(self, jsonData):
-        self._jsonData = jsonData
-        self._data = loadJsonDataForGraph(self._jsonData)
+    def __init__(self):
+        # self._data = self.loadJsonDataToDataframe(jsonData)
         # print(self._data)
+        pass
+        
+        
+    
+    def seperateJSONResult(self, originJsonData = None):
+        # __jsonType = type(json.loads(originJsonData)["result"])
+        __len = len(json.loads(originJsonData)["result"])
+        
+        if __len == 1:
+            __jsondata = pd.read_json(originJsonData)["result"]
+        else:
+            __jsondata = pd.DataFrame()
+            for i in range(__len):
+                tmp = pd.read_json(json.loads(originJsonData)["result"])
+                __jsondata = pd.concat([__jsondata, tmp])
+                
+        __jsondata = __jsondata.to_frame().T
+        
+        return __jsondata, __len
 
+
+    def loadJsonDataToDataframe(self, jsondata: dict = None):
+        __jsondata, __len = self.seperateJSONResult(jsondata)
+        
+        if __len > 1:
+            print("Data iS LIST TYPE")
+        else:
+            print("Data iS DICT TYPE")
+        
+        print(f' __len = {__len}')
+        
+        df = pd.DataFrame()
+            
+        for i in range(__len):
+            print(__jsondata)
+            # _convertTime = datetime.fromisoformat(__jsondata['_time'].iloc[i][:-5]).strftime('%Y-%m-%d %H:%M:%S')
+            # __jsondata['_time'].iloc[i] = _convertTime
+        
+        # for line in range(len(jsondata)):
+        #     print(line)
+        #     tmp = pd.read_json(jsondata[line])
+        #     print(tmp)
+        #     tmp = tmp.to_frame().T
+            
+        #     # type 정리
+        #     # type object to datetime
+        #     _convertTime = datetime.fromisoformat(tmp['_time'].iloc[0][:-5]).strftime('%Y-%m-%d %H:%M:%S')
+        #     tmp['_time'] = _convertTime
+            
+        #     # type object to integer
+        #     tmp = tmp.astype(dtype='int64', errors='ignore')
+        #     df = pd.concat([df, tmp])
+        
+        # df.set_index('_time', inplace=True)
+        
+        return df
+    
+    def dfTypeChange(jsondata: dict = None):
+        __jsondata = pd.read_json(jsondata)["result"]
+        __jsondata = __jsondata.to_frame().T
+            
+        # type 정리
+        # type object to datetime
+        _convertTime = datetime.fromisoformat(__jsondata['_time'].iloc[0][:-5]).strftime('%Y-%m-%d %H:%M:%S')
+        __jsondata['_time'] = _convertTime
+        
+        # type object to integer
+        __jsondata = __jsondata.astype(dtype='int64', errors='ignore')
+        
+        return __jsondata
+    
+    
     # draw graph
     def drawGraph(self, graphType : str = None, graphStyle : plt.style.available = 'ggplot'):
         
         plt.style.use(graphStyle)
         data = self._data
 
-        convBase64 = BytesIO()
+        __graphToBytes = BytesIO()
 
         # Default Line Graph
         if graphType == None:
@@ -101,9 +170,11 @@ class drawChart():
                 plt.xlabel(f'{dfGraph.columns[0]} ~ {dfGraph.columns[-2]} Status Pie Chart')
                 plt.legend(labels = data.columns, loc='best')
         
-        plt.savefig(convBase64, format='png', dpi=100, bbox_inches='tight')
+        # Graph PNG Setting
+        plt.savefig(__graphToBytes, format='png', dpi=100, bbox_inches='tight')
         plt.close()
         import base64
         
-        convBase64 = base64.b64encode(convBase64.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % convBase64        
+        # Base64 encoding
+        __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
+        return "data:image/png;base64,%s" % __convBase64        
