@@ -59,13 +59,78 @@ class drawChart():
     def tranform_datetype(beforeDatetime):        
         return datetime.fromisoformat(beforeDatetime[:-5]).strftime('%Y-%m-%d %H:%M:%S')
     
-    
+    # 현재 진행 중
+    # 05.14 각 도표별 필요 인자 및 설정 할 수 있는 인자 값 초기화 및 정리, 설명 추가 진행 중
     # draw graph
-    def drawGraph(self, graphType : str = None, graphStyle : plt.style.available = 'ggplot'):
+    def drawGraph(self, graphType : str = None, graphStyle : plt.style.available = 'ggplot', **kwargs):
+        """
+        Draw a graph with specified parameters.
+
+        Args:
+            graph_type (str, optional): Type of the graph ('scatter', 'line', 'bar', etc.). Defaults to None.
+            graph_style (str, optional): Style of the graph (see available styles below). Defaults to 'ggplot'.\n
+            **kwargs:
+                Markers:
+                    ```'.' - point marker 
+                    ',' - pixel marker 
+                    'o' - circle marker 
+                    'v' - triangle_down marker 
+                    '^' - triangle_up marker 
+                    '<' - triangle_left marker 
+                    '>' - triangle_right marker 
+                    '1' - tri_down marker 
+                    '2' - tri_up marker 
+                    '3' - tri_left marker 
+                    '4' - tri_right marker 
+                    '8' - octagon marker 
+                    's' - square marker 
+                    'p' - pentagon marker 
+                    'P' - plus (filled) marker 
+                    '*' - star marker 
+                    'h' - hexagon1 marker 
+                    'H' - hexagon2 marker 
+                    '+' - plus marker 
+                    'x' - x marker 
+                    'X' - x (filled) marker 
+                    'D' - diamond marker 
+                    'd' - thin_diamond marker 
+                    '|' - vline marker 
+                    '_' - hline marker 
+                    ```
+
+                Line Styles:
+                    ```'-'  - solid line style 
+                    '--' - dashed line style 
+                    '-.' - dash-dot line style 
+                    ':'  - dotted line style 
+                    ```
+
+                Colors:
+                    Single letter color codes ('b' for blue, 'r' for red, etc.) 
+                    'CN' colors that index into the default property cycle 
+                    Full names ('green', 'blue', etc.) 
+                    Hex strings ('#008000', '#0000FF', etc.) 
+
+        Returns:
+            JSON => Graph PNG Image To Base64Encode String
+        """
+
+        
+        # ARGS
+        __GRAPH_TYPE: str = kwargs.pop('graphtype', None)
+        __GRAPH_STYLE: plt.style.available = kwargs.pop('graphstyle', None)
+        __XLABEL: str = kwargs.pop('xlabel', None)
+        __YLABEL: str = kwargs.pop('ylabel', None)
+        __COLOR: str | list = kwargs.pop('color', None)
+        __WIDTH: int = kwargs.pop('width', None)
+        __HEIGHT: int = kwargs.pop('height', None)
+        
         
         plt.style.use(graphStyle)
-        print(f'self._data = \n{self._data}\n')
-        data = self._data
+        # print(f'self._data = \n{self._data}\n')
+        
+        # 원본 보존을 위한 copy
+        data = self._data.copy()
 
         __graphToBytes = BytesIO()
 
