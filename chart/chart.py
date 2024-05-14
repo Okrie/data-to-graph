@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from io import BytesIO
+from io import BytesIO, StringIO
 import json
 from datetime import datetime
 
@@ -8,103 +8,63 @@ class drawChart():
     _data : pd.DataFrame = None
     
     def __init__(self):
-        # self._data = self.loadJsonDataToDataframe(jsonData)
         # print(self._data)
         pass
-        
-        
     
+    # 받은 데이터가 한개, 한개 이상일 때로 구분하여 DataFrame 형태로 변경
     def seperateJSONResult(self, originJsonData = None):
-        # __jsonType = type(json.loads(originJsonData)["result"])
-
-        # 이 부분 다시 생각하기, 사이즈가 아닌 타입으로 구분하는 것이 더 나을듯
-        __len = len(json.loads(originJsonData)["result"])
-        print(f'__len = {__len}')
+        __jsonType = type(json.loads(originJsonData)["result"])
         
-        if __len == 1:
-            print(originJsonData)
-            __jsondata = pd.read_json(originJsonData)["result"]
+        # Result 데이터가 1개 일때
+        if __jsonType == dict:
+            __jsondata = pd.read_json(StringIO(originJsonData))["result"]
             __jsondata = __jsondata.to_frame().T
+            
+        # Result 데이터가 1개 이상 일 때
         else:
-            __jsondata = pd.DataFrame.from_records(json.loads(originJsonData)['result'], index=None)
-            # for i in range(__len):
-            #     print(pd.DataFrame.from_records(json.loads(originJsonData)['result'], index='_time'))
-            #     print(json.loads(originJsonData)["result"][i])
-            #     tmp = pd.DataFrame().from_dict(json.loads(originJsonData)["result"][i])
-            #     __jsondata = pd.concat([__jsondata, tmp])
-            print(f'1 : \n{__jsondata}')
-            for i in range(__len):
-                print(f'11 : \n{__jsondata.iloc[i]}')
-                # __jsondata.iloc[i] = datetime.fromisoformat(__jsondata.iloc[i][:-5]).strftime('%Y-%m-%d %H:%M:%S')
-            # _convertTime = datetime.fromisoformat(__jsondata['_time'][:-5]).strftime('%Y-%m-%d %H:%M:%S')
-            # print(_convertTime)
-            # __jsondata['_time'] = _convertTime
-            __jsondata = __jsondata.T
+            __jsondata = pd.DataFrame.from_records(json.loads(originJsonData)['result'])
 
-        print(f'2 : {__jsondata}')
-        # _convertTime = datetime.fromisoformat(__jsondata['_time'][:-5]).strftime('%Y-%m-%d %H:%M:%S')
-        # print(_convertTime)
-        # __jsondata['_time'] = _convertTime
-
-        # __jsondata = __jsondata.to_frame().T
-        return __jsondata, __len
+        __jsondata.reset_index(drop=True, inplace=True)
+        
+        __jsondata.set_index('_time', inplace=True)
+        
+        return __jsondata, len(__jsondata)
 
 
+    # Graph를 그리기 위한 Data 정제 과정
+    # 데이터를 받아 하나의 DataFrame으로 병합
     def loadJsonDataToDataframe(self, jsondata: dict = None):
         __jsondata, __len = self.seperateJSONResult(jsondata)
         
-        if __len > 1:
-            print("Data iS LIST TYPE")
-        else:
-            print("Data iS DICT TYPE")
-        
-        print(f' __len = {__len}')
-        
-        df = pd.DataFrame()
-            
-        for i in range(__len):
-            print(__jsondata)
-            # _convertTime = datetime.fromisoformat(__jsondata['_time'].iloc[i][:-5]).strftime('%Y-%m-%d %H:%M:%S')
-            # __jsondata['_time'].iloc[i] = _convertTime
-        
-        # for line in range(len(jsondata)):
-        #     print(line)
-        #     tmp = pd.read_json(jsondata[line])
-        #     print(tmp)
-        #     tmp = tmp.to_frame().T
-            
-        #     # type 정리
-        #     # type object to datetime
-        #     _convertTime = datetime.fromisoformat(tmp['_time'].iloc[0][:-5]).strftime('%Y-%m-%d %H:%M:%S')
-        #     tmp['_time'] = _convertTime
-            
-        #     # type object to integer
-        #     tmp = tmp.astype(dtype='int64', errors='ignore')
-        #     df = pd.concat([df, tmp])
-        
-        # df.set_index('_time', inplace=True)
-        
-        return df
-    
-    def dfTypeChange(jsondata: dict = None):
-        __jsondata = pd.read_json(jsondata)["result"]
-        __jsondata = __jsondata.to_frame().T
-            
-        # type 정리
-        # type object to datetime
-        _convertTime = datetime.fromisoformat(__jsondata['_time'].iloc[0][:-5]).strftime('%Y-%m-%d %H:%M:%S')
-        __jsondata['_time'] = _convertTime
+        # print(f' __len = {__len}')
+        # if __len > 1:
+        #     print("Data iS LIST TYPE")
+        # else:
+        #     print("Data iS DICT TYPE")
         
         # type object to integer
         __jsondata = __jsondata.astype(dtype='int64', errors='ignore')
         
-        return __jsondata
+        # type object to datetime
+        # __jsondata._time = __jsondata._time.apply(self.tranform_datetype)
+        
+        self._data = pd.concat([self._data, __jsondata])
+
+        return self._data
+    
+    
+    # 현재 일부 문제가 있어 미사용
+    # 시간 값을 년-월-일 시:분:초로 변경하는 과정
+    @staticmethod
+    def tranform_datetype(beforeDatetime):        
+        return datetime.fromisoformat(beforeDatetime[:-5]).strftime('%Y-%m-%d %H:%M:%S')
     
     
     # draw graph
     def drawGraph(self, graphType : str = None, graphStyle : plt.style.available = 'ggplot'):
         
         plt.style.use(graphStyle)
+        print(f'self._data = \n{self._data}\n')
         data = self._data
 
         __graphToBytes = BytesIO()

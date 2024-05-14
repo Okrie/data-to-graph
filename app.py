@@ -22,24 +22,23 @@ app = FastAPI()
 async def home(request: Request):
     # jsondata = loadJsonDataForGraph("1715043362_19")
     
-    data = drawChart()
+    graph = drawChart()
     # RestApi를 통해 json 을 받는 다는 가정으로 해당에 맞게 데이터 정제
     jsondata = open(f"{os.path.realpath('.')}/static/data/1715043362_19.json", 'rb')
     jsondata = jsondata.read().decode('utf-8')
     jsondataList = jsondata.split('\n')[:-1]
     
     print(f'Lines : {len(jsondataList)}')
+    # 현재 json 데이터가 각 줄별로 데이터 날아 온 것처럼 합쳐져 있어 아래와 같이 나눠서 보냄
+    # Response 내 "result" 항목이 하나라면 graph.loadJsonDataToDataframe(jsondata) 같이 사용
     for i in range(len(jsondataList)):
-        data.loadJsonDataToDataframe(jsondataList[i])
-    
-    graph = drawChart(jsondata)
+        graph.loadJsonDataToDataframe(jsondataList[i])
     
     linechart = graph.drawGraph()
     twinchart = graph.drawGraph(graphType='twin')
     barchart = graph.drawGraph(graphType='bar')
     piechart = graph.drawGraph(graphType='pie')
     resultImages = [linechart, barchart, twinchart, piechart]
-    # print(readLogData("access.log"))
     return templates.TemplateResponse("index.html",{"request":request, "images": resultImages, "count": len(resultImages)})
 
 
