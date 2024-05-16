@@ -70,8 +70,16 @@ class drawChart():
             graph_type (str, optional): Type of the graph ('scatter', 'line', 'bar', etc.). Defaults to None.
             graph_style (str, optional): Style of the graph (see available styles below). Defaults to 'ggplot'.\n
             **kwargs:
+                GraphStyle:
+                    ```
+                    'line'   - default Graph
+                    'bar'    - bar Graph
+                    'pie'    - pie Graph
+                    ```
+                    
                 Markers:
-                    ```'.' - point marker 
+                    ```
+                    '.' - point marker 
                     ',' - pixel marker 
                     'o' - circle marker 
                     'v' - triangle_down marker 
@@ -99,62 +107,136 @@ class drawChart():
                     ```
 
                 Line Styles:
-                    ```'-'  - solid line style 
+                    ```
+                    '-'  - solid line style 
                     '--' - dashed line style 
                     '-.' - dash-dot line style 
                     ':'  - dotted line style 
                     ```
 
                 Colors:
+                    ```
+                    Can Using Colors 
+                        - 'b', 'g', 'c', 'k', 'm', 'w', 'r', 'y' 
+                        - Tableau Colors
+                        - CSS Colors
+                        - Hex String
+                    
                     Single letter color codes ('b' for blue, 'r' for red, etc.) 
                     'CN' colors that index into the default property cycle 
                     Full names ('green', 'blue', etc.) 
-                    Hex strings ('#008000', '#0000FF', etc.) 
+                    Hex strings ('#008000', '#0000FF', etc.)
+                    ``` 
+                    
+                Legend:
+                    ```
+                    'best'   - auto, default
+                    'upper right'   - upper right
+                    'upper center'  - upper center
+                    'upper left'    - upper left
+                    'lower right'   - lower right
+                    'lower center'  - lower center
+                    'lower left'    - lower left
+                    'right'         - right
+                    'center'        - center
+                    'left'          - left
+                    ```
 
         Returns:
             JSON => Graph PNG Image To Base64Encode String
         """
 
+        # Data ARGS
+        __DROPCOLUMN: bool = kwargs.pop('drop', False)
+        __DROPCOLUMNS: list[str] = kwargs.pop('dropcolumn', None)
         
-        # ARGS
-        __GRAPH_TYPE: str = kwargs.pop('graphtype', None)
-        __GRAPH_STYLE: plt.style.available = kwargs.pop('graphstyle', None)
+        # Common GRAPH ARGS
+        __GRAPH_STYLE: plt.style.available = kwargs.pop('graphstyle', 'ggplot')
+        __GRAPH_TYPE: str = kwargs.pop('kind', 'line')
+        
+        ## GRAPH SIZE
+        __FIGSIZE: tuple[int, int] = kwargs.pop('figsize', (12, 5))
+        
+        ## GRAPH View Settings
+        ### GRAPH TEXT
+        __TITLE: str = kwargs.pop('title', None)
+        __LABEL: str = kwargs.pop('label', None)
         __XLABEL: str = kwargs.pop('xlabel', None)
         __YLABEL: str = kwargs.pop('ylabel', None)
+        
+        ### GRAPH X, Y Limit Length, Height
+        __XLIM: list[float, float] = kwargs.pop('xlim', None)
+        __YLIM: list[float, float] = kwargs.pop('ylim', None)
+        
+        ### COLOR, WIDTH, HEIGHT, GRID, AXIS
         __COLOR: str | list = kwargs.pop('color', None)
-        __WIDTH: int = kwargs.pop('width', None)
-        __HEIGHT: int = kwargs.pop('height', None)
+        __GRID: bool = kwargs.pop('grid', True)
+        __AXIS: int = kwargs.pop('axis', 0)
+        
+        ## GRAPH layout margin
+        __TIGHTLAYOUT: bool = kwargs.pop('tightlayout', False)
+        
+        ## LABEL TEXT ROTATE
+        __XTICKS: float = kwargs.pop('xticks', 0)
+        __YTICKS: float = kwargs.pop('yticks', 0)
+        
+        ## LEGEND ARGS
+        __LEGENDPOS: str = kwargs.pop('legendpos', 'best')
+        __LEGENDFONTSIZE: int = kwargs.pop('legendfontsize', 7)
         
         
-        plt.style.use(graphStyle)
+        # Line GRAPH ARGS
+        __MARKER: str = kwargs.pop('marker', '.')
+        __MARKERSIZE: int = kwargs.pop('markersize', 5)
+        
+        # Bar GRAPH ARGS
+        __WIDTH: float = kwargs.pop('width', 0.7)
+        __LINEWIDTH: int = kwargs.pop('linewidth', 1)
+        __STACKED: bool = kwargs.pop('stacked', False)
+        
+        # Line with Bar GRAPH ARGS
+        __TWINX: bool = kwargs.pop('twinx', False)
+        __TWINY: bool = kwargs.pop('twiny', False)
+        
+        # Pie GRAPH ARGS
+        __AUTOPCT: str = kwargs.pop('autopct', '%.2f%%')    # %% : % 출력
+        __STARTANGLE: float = kwargs.pop('startangle', 10)
+        
+        
+        plt.style.use(__GRAPH_STYLE)
         # print(f'self._data = \n{self._data}\n')
         
         # 원본 보존을 위한 copy
         data = self._data.copy()
 
         __graphToBytes = BytesIO()
+        
+        plt.title(__TITLE)
+        
 
         # Default Line Graph
         if graphType == None:
             dfGraph = data.T
-            fig = plt.figure(figsize=(14, 5))
+            fig = plt.figure(figsize=__FIGSIZE)
             
             ax = fig.add_subplot(1, 1, 1)
             
-            plt.xlabel('Day')
-            plt.ylabel("Count")
-            plt.xticks(rotation = 45)
+            plt.xlabel(__XLABEL)
+            plt.ylabel(__YLABEL)
+            plt.xticks(rotation = __XTICKS)
+            plt.yticks(rotation = __YTICKS)
             
             for i in range(len(self._data.columns)):
                 ax.plot(
                     dfGraph.columns,
                     dfGraph.loc[self._data.columns[i], :],
-                    marker='o',
-                    markersize=10,
-                    lw=2,
-                    label=f'{self._data.columns[i]}',
+                    marker= __MARKER,
+                    markersize= __MARKERSIZE,
+                    lw= __LINEWIDTH,
+                    label= __LABEL,
                 )
-            plt.legend(loc='best')
+                
+            plt.legend(loc=__LEGENDPOS, fontsize=__LEGENDFONTSIZE)
             
         # Line & Bar Graph
         elif graphType == 'twin':
@@ -162,57 +244,65 @@ class drawChart():
             
             # Bar Graph
             ax1 = data.plot(
-                kind = 'bar',
-                figsize=(12, 5),
-                width = 0.7,
-                stacked=True,
+                kind = __GRAPH_TYPE,
+                figsize= __FIGSIZE,
+                width = __WIDTH,
+                stacked= __STACKED,
             )
             
-            ax = ax1.twinx()
+            if __TWINX | __TWINY:
+                if __TWINX:
+                    ax = ax1.twinx()
+                elif __TWINY:
+                    ax = ax1.twiny()
             
-            plt.xlabel('Day')
-            plt.ylabel("Count")
-            plt.xticks(rotation = 45)
+            plt.xlabel(__XLABEL)
+            plt.ylabel(__YLABEL)
+            plt.xticks(rotation = __XTICKS)
+            plt.yticks(rotation = __YTICKS)
             
             # Line Graph
             for i in range(len(self._data.columns)):
                 ax.plot(
                     dfGraph.columns,
                     dfGraph.loc[self._data.columns[i], :],
-                    marker='o',
-                    markersize=10,
-                    lw=2,
-                    label=f'{self._data.columns[i]}',
+                    marker= __MARKER,
+                    markersize= __MARKERSIZE,
+                    lw= __LINEWIDTH,
+                    label= __LABEL,
                 )
-            ax1.legend(loc='best')
+            ax1.legend(loc= __LEGENDPOS)
         
         # Bar, Pie Graph
         else:
             # Bar Graph
             if graphType == 'bar':
                 data.plot(
-                    kind = graphType,
-                    figsize=(12, 5),
-                    width = 0.7,
-                    stacked=True,
+                    kind = __GRAPH_TYPE,
+                    figsize= __FIGSIZE,
+                    width = __WIDTH,
+                    stacked= __STACKED,
                 )
-                plt.legend(loc='best')
+                plt.legend(loc= __LEGENDPOS)
                 
             # Pie Graph
             else:
                 dfGraph = data
                 dfGraph.loc['Total', :] = dfGraph[dfGraph.columns].sum(axis=0)
                 dfGraph = dfGraph.T
-                dfGraph.drop('NULL', axis=0, inplace=True)
+                
+                if __DROPCOLUMN:
+                    dfGraph.drop(__DROPCOLUMNS, axis=0, inplace=True)
                 
                 dfGraph['Total'].plot(
-                    kind='pie',
-                    figsize=(20, 12),
-                    autopct='%.2f%%',    # %% : % 출력
-                    startangle=10,
+                    kind= __GRAPH_TYPE,
+                    figsize= __FIGSIZE,
+                    autopct= __AUTOPCT,
+                    startangle= __STARTANGLE,
+                    grid= __GRID,
                 )
-                plt.xlabel(f'{dfGraph.columns[0]} ~ {dfGraph.columns[-2]} Status Pie Chart')
-                plt.legend(labels = data.columns, loc='best')
+                plt.xlabel(__XLABEL)
+                plt.legend(labels = data.columns, loc= __LEGENDPOS, fontsize= __LEGENDFONTSIZE)
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=100, bbox_inches='tight')
@@ -221,4 +311,4 @@ class drawChart():
         
         # Base64 encoding
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64        
+        return "data:image/png;base64,%s" % __convBase64
