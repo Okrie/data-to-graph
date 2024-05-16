@@ -62,7 +62,7 @@ class drawChart():
     # 현재 진행 중
     # 05.14 각 도표별 필요 인자 및 설정 할 수 있는 인자 값 초기화 및 정리, 설명 추가 진행 중
     # draw graph
-    def drawGraph(self, graphType : str = None, graphStyle : plt.style.available = 'ggplot', **kwargs):
+    def drawGraph(self, graphStyle : plt.style.available = 'ggplot', **kwargs):
         """
         Draw a graph with specified parameters.
 
@@ -147,7 +147,6 @@ class drawChart():
         """
 
         # Data ARGS
-        __DROPCOLUMN: bool = kwargs.pop('drop', False)
         __DROPCOLUMNS: list[str] = kwargs.pop('dropcolumn', None)
         
         # Common GRAPH ARGS
@@ -177,8 +176,8 @@ class drawChart():
         __TIGHTLAYOUT: bool = kwargs.pop('tightlayout', False)
         
         ## LABEL TEXT ROTATE
-        __XTICKS: float = kwargs.pop('xticks', 0)
-        __YTICKS: float = kwargs.pop('yticks', 0)
+        __XTICKS: int = kwargs.pop('xticks', 45)
+        __YTICKS: int = kwargs.pop('yticks', 0)
         
         ## LEGEND ARGS
         __LEGENDPOS: str = kwargs.pop('legendpos', 'best')
@@ -212,10 +211,9 @@ class drawChart():
         __graphToBytes = BytesIO()
         
         plt.title(__TITLE)
-        
 
         # Default Line Graph
-        if graphType == None:
+        if __GRAPH_TYPE == 'line':
             dfGraph = data.T
             fig = plt.figure(figsize=__FIGSIZE)
             
@@ -233,18 +231,21 @@ class drawChart():
                     marker= __MARKER,
                     markersize= __MARKERSIZE,
                     lw= __LINEWIDTH,
-                    label= __LABEL,
+                    label= f'{self._data.columns[i]}',
                 )
                 
             plt.legend(loc=__LEGENDPOS, fontsize=__LEGENDFONTSIZE)
-            
+        
         # Line & Bar Graph
-        elif graphType == 'twin':
+        elif __GRAPH_TYPE == 'twin':
             dfGraph = data.T
+            
+            plt.xlabel(__XLABEL)
+            plt.ylabel(__YLABEL)
             
             # Bar Graph
             ax1 = data.plot(
-                kind = __GRAPH_TYPE,
+                kind = 'bar',
                 figsize= __FIGSIZE,
                 width = __WIDTH,
                 stacked= __STACKED,
@@ -256,11 +257,6 @@ class drawChart():
                 elif __TWINY:
                     ax = ax1.twiny()
             
-            plt.xlabel(__XLABEL)
-            plt.ylabel(__YLABEL)
-            plt.xticks(rotation = __XTICKS)
-            plt.yticks(rotation = __YTICKS)
-            
             # Line Graph
             for i in range(len(self._data.columns)):
                 ax.plot(
@@ -271,18 +267,28 @@ class drawChart():
                     lw= __LINEWIDTH,
                     label= __LABEL,
                 )
+
+            plt.xticks(rotation = __XTICKS)
+            plt.yticks(rotation = __YTICKS)
+
             ax1.legend(loc= __LEGENDPOS)
-        
+
         # Bar, Pie Graph
         else:
             # Bar Graph
-            if graphType == 'bar':
+            if __GRAPH_TYPE == 'bar':
+
                 data.plot(
                     kind = __GRAPH_TYPE,
                     figsize= __FIGSIZE,
                     width = __WIDTH,
                     stacked= __STACKED,
                 )
+                
+                plt.xlabel(__XLABEL)
+                plt.ylabel(__YLABEL)
+                plt.xticks(rotation = __XTICKS)
+                plt.yticks(rotation = __YTICKS)
                 plt.legend(loc= __LEGENDPOS)
                 
             # Pie Graph
@@ -291,24 +297,28 @@ class drawChart():
                 dfGraph.loc['Total', :] = dfGraph[dfGraph.columns].sum(axis=0)
                 dfGraph = dfGraph.T
                 
-                if __DROPCOLUMN:
+                if __DROPCOLUMNS != None:
                     dfGraph.drop(__DROPCOLUMNS, axis=0, inplace=True)
                 
                 dfGraph['Total'].plot(
-                    kind= __GRAPH_TYPE,
+                    kind= 'pie',
                     figsize= __FIGSIZE,
                     autopct= __AUTOPCT,
                     startangle= __STARTANGLE,
                     grid= __GRID,
                 )
                 plt.xlabel(__XLABEL)
+                plt.ylabel(__YLABEL)
+                plt.xticks(rotation = __XTICKS)
+                plt.yticks(rotation = __YTICKS)
+
                 plt.legend(labels = data.columns, loc= __LEGENDPOS, fontsize= __LEGENDFONTSIZE)
         
         # Graph PNG Setting
-        plt.savefig(__graphToBytes, format='png', dpi=100, bbox_inches='tight')
+        plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
         plt.close()
-        import base64
         
         # Base64 encoding
+        import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
         return "data:image/png;base64,%s" % __convBase64
