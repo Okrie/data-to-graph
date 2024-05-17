@@ -4,15 +4,66 @@ from io import BytesIO, StringIO
 import json
 from datetime import datetime
 
-class drawChart():
-    _data : pd.DataFrame = None
+class drawChart:
+    _data: pd.DataFrame = None
+    _len: int = 0
+    
+    # OPTIONS
+    general: dict = {
+        # Common GRAPH ARGS
+        'graph_style': 'ggplot',    # graph view style
+        
+        ## GRAPH SIZE
+        'fig_size': (12, 5),    # graph size        tuple
+        
+        ## GRAPH View Settings
+        ### GRAPH TEXT
+        'title': None,          # graph title                   str
+        'label': _data.columns if _data != None else None, # legend label                  list | series
+        
+        # Flip x - y
+        'flip': False,          # Flip X-Y axis                 True, False
+    }
+    
+    x_axis: dict = {
+        'label': None,          # x axis label                  str
+        'ticks': 45,            # x label text rotate degree    -90 ~ 90
+        'min' : 0,              # limit low value
+        'max' : 1000,           # limit high value
+    }
+    
+    y_axis: dict = {
+        'label': None,          # y axis label                  str
+        'ticks': 0,             # y label text rotate degree    -90 ~ 90
+        'min' : 0,              # limit low value
+        'max' : 1000,           # limit high value
+    }
+    
+    legend: dict = {
+        'location': 'best',     # legend location               best, left, center, right, upper [left, center, right], lower [left, center, right]
+        'fontsize': 7,          # legend fontsize               int
+    }
+    
+    overlay: dict = {
+        ### COLOR, WIDTH, HEIGHT, GRID, AXIS
+        'color': None,          # graph value color             str | list
+        'grid': True,           # graph in grid background      True, False
+        'axis': 0,              # value axis                    0 - horizental, 1 - vertical
+        
+        ## GRAPH layout margin
+        'tight_layout': False,  # graph layout margin           True, False
+        
+        # Marker
+        'marker': 'o',          # draw line on marker           
+        'marker_size': 5,       # marker size
+    }
     
     def __init__(self):
         # print(self._data)
         pass
     
     # 받은 데이터가 한개, 한개 이상일 때로 구분하여 DataFrame 형태로 변경
-    def seperateJSONResult(self, originJsonData = None):
+    def seperateJSONResult(self, originJsonData = None, index_column = '_time'):
         __jsonType = type(json.loads(originJsonData)["result"])
         
         # Result 데이터가 1개 일때
@@ -26,15 +77,23 @@ class drawChart():
 
         __jsondata.reset_index(drop=True, inplace=True)
         
-        __jsondata.set_index('_time', inplace=True)
+        # index로 지정할 컬럼 유무 체크
+        try:
+            __jsondata.set_index(index_column, inplace=True)
+        except:
+            print(__jsondata)
+            raise print("Not Exist column for using index \n Check Columns")
+            
         
-        return __jsondata, len(__jsondata)
+        self._len = len(__jsondata)
+        
+        return __jsondata
 
 
     # Graph를 그리기 위한 Data 정제 과정
     # 데이터를 받아 하나의 DataFrame으로 병합
     def loadJsonDataToDataframe(self, jsondata: dict = None):
-        __jsondata, __len = self.seperateJSONResult(jsondata)
+        __jsondata = self.seperateJSONResult(jsondata)
         
         # print(f' __len = {__len}')
         # if __len > 1:
@@ -58,6 +117,22 @@ class drawChart():
     @staticmethod
     def tranform_datetype(beforeDatetime):        
         return datetime.fromisoformat(beforeDatetime[:-5]).strftime('%Y-%m-%d %H:%M:%S')
+    
+    # option 정의 재사용을 위한 함수
+    def optionUpdate(self, **kwargs):
+        self.general.update(kwargs.pop('general', self.general))
+        self.x_axis.update(kwargs.pop('x_axis', self.x_axis))
+        self.y_axis.update(kwargs.pop('y_axis', self.y_axis))
+        self.legend.update(kwargs.pop('legend', self.legend))
+        self.overlay.update(kwargs.pop('overlay', self.overlay))
+    
+    # 05.17 그래프 분리
+    # Line Graph
+    def line(self, general: dict, x_axis: dict, y_axis: dict, legend: dict, overlay: dict):
+        self.optionUpdate(general, x_axis, y_axis, legend, overlay)
+        
+        
+        return
     
     # 현재 진행 중
     # 05.14 각 도표별 필요 인자 및 설정 할 수 있는 인자 값 초기화 및 정리, 설명 추가 진행 중
@@ -207,22 +282,24 @@ class drawChart():
         
         # 원본 보존을 위한 copy
         data = self._data.copy()
-
+        
         __graphToBytes = BytesIO()
         
-        plt.title(__TITLE)
+        if __DROPCOLUMNS != None:
+            data.T.drop(__DROPCOLUMNS, axis=0, inplace=True)
+            print(data)
+            
+        # Line, Pie Graph는 T
+        # Bar Graph는 원본
 
         # Default Line Graph
         if __GRAPH_TYPE == 'line':
-            dfGraph = data.T
+            dfGraph = data.T.copy()
             fig = plt.figure(figsize=__FIGSIZE)
             
             ax = fig.add_subplot(1, 1, 1)
             
-            plt.xlabel(__XLABEL)
-            plt.ylabel(__YLABEL)
-            plt.xticks(rotation = __XTICKS)
-            plt.yticks(rotation = __YTICKS)
+            print(dfGraph.T)
             
             for i in range(len(self._data.columns)):
                 ax.plot(
@@ -231,17 +308,18 @@ class drawChart():
                     marker= __MARKER,
                     markersize= __MARKERSIZE,
                     lw= __LINEWIDTH,
-                    label= f'{self._data.columns[i]}',
                 )
-                
-            plt.legend(loc=__LEGENDPOS, fontsize=__LEGENDFONTSIZE)
+            
+            plt.title(__TITLE, loc='center')
+            plt.xlabel(__XLABEL)
+            plt.ylabel(__YLABEL)
+            plt.xticks(rotation = __XTICKS)
+            plt.yticks(rotation = __YTICKS)
+            plt.legend(labels = self._data.columns, loc=__LEGENDPOS, fontsize=__LEGENDFONTSIZE)
         
         # Line & Bar Graph
         elif __GRAPH_TYPE == 'twin':
-            dfGraph = data.T
-            
-            plt.xlabel(__XLABEL)
-            plt.ylabel(__YLABEL)
+            dfGraph = data.T.copy()
             
             # Bar Graph
             ax1 = data.plot(
@@ -249,6 +327,10 @@ class drawChart():
                 figsize= __FIGSIZE,
                 width = __WIDTH,
                 stacked= __STACKED,
+                xlabel= __XLABEL,
+                ylabel= __YLABEL,
+                xlim= __XLIM,
+                ylim= __YLIM,                
             )
             
             if __TWINX | __TWINY:
@@ -258,33 +340,37 @@ class drawChart():
                     ax = ax1.twiny()
             
             # Line Graph
-            for i in range(len(self._data.columns)):
+            for i in range(len(data.columns)):
                 ax.plot(
                     dfGraph.columns,
-                    dfGraph.loc[self._data.columns[i], :],
+                    dfGraph.loc[data.columns[i], :],
                     marker= __MARKER,
                     markersize= __MARKERSIZE,
                     lw= __LINEWIDTH,
-                    label= __LABEL,
                 )
 
+            plt.title(__TITLE, loc='center')
+            plt.xlabel(__XLABEL)
+            plt.ylabel(__YLABEL)
             plt.xticks(rotation = __XTICKS)
             plt.yticks(rotation = __YTICKS)
 
-            ax1.legend(loc= __LEGENDPOS)
+            ax1.legend(labels = self._data.columns, loc= __LEGENDPOS)
 
         # Bar, Pie Graph
         else:
             # Bar Graph
             if __GRAPH_TYPE == 'bar':
-
-                data.plot(
+                dfGraph = data.copy()
+                
+                dfGraph.plot(
                     kind = __GRAPH_TYPE,
                     figsize= __FIGSIZE,
                     width = __WIDTH,
                     stacked= __STACKED,
                 )
                 
+                plt.title(__TITLE, loc='center')
                 plt.xlabel(__XLABEL)
                 plt.ylabel(__YLABEL)
                 plt.xticks(rotation = __XTICKS)
@@ -293,12 +379,9 @@ class drawChart():
                 
             # Pie Graph
             else:
-                dfGraph = data
+                dfGraph = data.copy()
                 dfGraph.loc['Total', :] = dfGraph[dfGraph.columns].sum(axis=0)
                 dfGraph = dfGraph.T
-                
-                if __DROPCOLUMNS != None:
-                    dfGraph.drop(__DROPCOLUMNS, axis=0, inplace=True)
                 
                 dfGraph['Total'].plot(
                     kind= 'pie',
@@ -306,13 +389,16 @@ class drawChart():
                     autopct= __AUTOPCT,
                     startangle= __STARTANGLE,
                     grid= __GRID,
+                    
                 )
+                
+                plt.title(__TITLE, loc='center')
                 plt.xlabel(__XLABEL)
                 plt.ylabel(__YLABEL)
                 plt.xticks(rotation = __XTICKS)
                 plt.yticks(rotation = __YTICKS)
 
-                plt.legend(labels = data.columns, loc= __LEGENDPOS, fontsize= __LEGENDFONTSIZE)
+                plt.legend(labels = self._data.columns, loc= __LEGENDPOS, fontsize= __LEGENDFONTSIZE)
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')

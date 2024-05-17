@@ -34,10 +34,11 @@ async def home(request: Request):
     for i in range(len(jsondataList)):
         graph.loadJsonDataToDataframe(jsondataList[i])
     
-    linechart = graph.drawGraph(kind='line', xticks=45, label='Status', title="STATUS", xlabel='DAY', ylabel='COUNT')
-    twinchart = graph.drawGraph(kind='twin', twinx=True, stacked=True, xticks=45, xlabel='DAY', ylabel='COUNT', title='Bar Width Line')
+    # graph.loadJsonDataToDataframe(jsondataList[1])
+    linechart = graph.drawGraph(kind='line', xticks=45, title="STATUS", xlabel='DAY', ylabel='COUNT')
+    twinchart = graph.drawGraph(kind='twin', twinx=True, stacked=False, xticks=45, xlabel='DAY', ylabel='COUNT', title='Bar Width Line')
     barchart = graph.drawGraph(kind='bar', witdh=0.7, stacked=True, xticks=45, xlabel='DAY', ylabel='COUNT')
-    piechart = graph.drawGraph(kind='pie', dropcolumn=['NULL', '200'], label='Status', figsize=(14, 5))
+    piechart = graph.drawGraph(kind='pie', dropcolumn=['NULL', '200'], figsize=(12, 5))
     resultImages = [linechart, barchart, twinchart, piechart]
     return templates.TemplateResponse("index.html",{"request":request, "images": resultImages, "count": len(resultImages)})
 
