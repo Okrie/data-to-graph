@@ -70,7 +70,10 @@ class drawChart:
             'width': 1,             # Bar Width                     float over 0
             'colors': None,         # Bar Colors                    default following matplotlib colors    
             'stack': True,          # Bar values Stacked            True, False
-            'align': None,          # Bar align                     left, center, right
+            'align': None,          # Bar align                     center, edge
+        },
+        'twin': {
+            'twin': 'x'             # Twin Axis                     default x
         },
     }
     
@@ -229,7 +232,7 @@ class drawChart:
         # column 삭제 유무
         if general['drop_columns']:
             data.T.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
-            print(data)
+            print(f"Deleted Column : {general['drop_columns']}\n{data}")
         
         # base64 Encoding을 위한 bytesIO
         __graphToBytes = BytesIO()
@@ -327,7 +330,7 @@ class drawChart:
                     'width': 1, # Bar Width  float over 0
                     'colors': None, # Bar Colors  default following matplotlib colors    
                     'stack': True, # Bar values Stacked  True, False
-                    'align': None, # Bar align  left, center, right
+                    'align': None, # Bar align  center, edge
                 }
                 ```
         """
@@ -349,7 +352,7 @@ class drawChart:
         # column 삭제 유무
         if general['drop_columns']:
             data.T.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
-            print(data)
+            print(f"Deleted Column : {general['drop_columns']}\n{data}")
         
         # base64 Encoding을 위한 bytesIO
         __graphToBytes = BytesIO()
@@ -365,6 +368,158 @@ class drawChart:
             stacked= bar['stack'],
             lw= bar['width'],
             color= bar['colors']
+        )
+        
+        plt.title(general['title'], loc='center')
+        plt.xlim((x_axis['min'], x_axis['max']))
+        plt.ylim((y_axis['min'], y_axis['max']))
+        plt.xlabel(x_axis['label'])
+        plt.ylabel(y_axis['label'])
+        plt.xticks(rotation = x_axis['ticks'])
+        plt.yticks(rotation = y_axis['ticks'])
+        plt.grid(visible=overlay['grid'])
+        plt.legend(labels = data.columns if legend['labels'] == None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        
+        # Graph PNG Setting
+        plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
+        plt.close()
+        
+        # Base64 encoding
+        import base64
+        __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
+        return "data:image/png;base64,%s" % __convBase64
+    
+    
+    # 05.20 그래프 분리
+    # Twin Graph
+    def twin(self, option = dict):
+        """## Twin Graph
+
+        ### Args:
+            general (dict): 
+                ```
+                'general': {
+                    'graph_style': 'ggplot', # graph view style
+                    'fig_size': (12, 5), # graph size  tuple
+                    'title': None, # graph title  str
+                    'label': _data.columns if _data != None else None, # legend label  list | series
+                    'flip': False, # Flip X-Y axis  True, False
+                    'drop_columns': False, # Drop Column on Graph  True, False
+                    'drop_columns_name': [''], # Drop Column Name  list[str]
+                    'drop_column_axis': 0, # Drop Column Axis  0 - horizental, 1 - vertical
+                    'dpi': 200, # Graph Resolution  default = 200
+                }
+                ```
+            x_axis (dict): 
+                ```
+                'x_axis': {
+                    'label': None, # x axis label  str
+                    'ticks': 45, # x label text rotate degree  -90 ~ 90
+                    'min' : None, # limit low value
+                    'max' : None, # limit high value
+                }
+                ```
+            y_axis (dict):
+                ```
+                'y_axis': {
+                    'label': None, # y axis label  str
+                    'ticks': 0, # y label text rotate degree  -90 ~ 90
+                    'min' : None, # limit low value
+                    'max' : None, # limit high value
+                }
+                ```
+            legend (dict): 
+                ```
+                'legend': {
+                    'labels': None, # legend label  columns
+                    'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
+                    'fontsize': 7, # legend fontsize  int
+                }
+                ```
+            overlay (dict): 
+                ```
+                'overlay': {
+                    'grid': True, # graph in grid background  True, False
+                    'axis': 0, # value axis  0 - horizental, 1 - vertical
+                    'tight_layout': False, # graph layout margin  True, False
+                }
+                ```
+            line (dict):
+                ```
+                'line': {
+                    'width': 1, # Line Width  float over 0
+                    'style': '-', # Line Style  default = '-', '--' '-.' ':'
+                    'colors': None, # Line Colors  default following matplotlib colors    
+                    'marker': 'o', # draw line on marker           
+                    'marker_size': 5, # marker size
+                }
+                ```
+            bar (dict):
+                ```
+                'bar': {
+                    'width': 1, # Bar Width  float over 0
+                    'colors': None, # Bar Colors  default following matplotlib colors    
+                    'stack': True, # Bar values Stacked  True, False
+                    'align': None, # Bar align  left, center, right
+                }
+                ```
+            twin (dict):
+                ```
+                'twin': {
+                    'twin': 'x' # Twin Axis  default x
+                }
+        """
+        updated_option = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
+        
+        print(f'Option \n {updated_option}')
+        general = updated_option['general']
+        x_axis = updated_option['x_axis']
+        y_axis = updated_option['y_axis']
+        legend = updated_option['legend']
+        overlay = updated_option['overlay']
+        line = updated_option['line']
+        bar = updated_option['bar']
+        twin = updated_option['twin']
+        
+        plt.style.use(general['graph_style'])
+        
+        # 원본 보존을 위한 copy
+        data = self._data.copy()
+        
+        # column 삭제 유무
+        if general['drop_columns']:
+            data.T.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
+            print(f"Deleted Column : {general['drop_columns']}\n{data}")
+        
+        # base64 Encoding을 위한 bytesIO
+        __graphToBytes = BytesIO()
+
+        # Draw Graph
+        dfGraph = data.copy() if not general['flip'] else data.T.copy()
+        fig, bargraph = plt.subplots(figsize=general['fig_size'])
+        
+        print(dfGraph)
+        
+        # Bar Graph
+        dfGraph.plot(
+            kind = 'bar',
+            stacked= bar['stack'],
+            lw= bar['width'],
+            color= bar['colors'],
+            align= bar['align'],
+            ax=bargraph,
+        )
+        
+        # Twinx | Twiny
+        linegraph = bargraph.twinx() if twin['twin'] == 'x' else bargraph.twiny()
+        
+        # Line Graph
+        dfGraph.plot(
+            marker= line['marker'],
+            markersize= line['marker_size'],
+            lw= line['width'],
+            color=line['colors'],
+            ax=linegraph,
         )
         
         plt.title(general['title'], loc='center')
