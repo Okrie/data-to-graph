@@ -36,13 +36,13 @@ class drawChart:
         'x_axis': {
             'label': None,          # x axis label                  str
             'ticks': 45,            # x label text rotate degree    -90 ~ 90
-            'min' : None,              # limit low value
+            'min' : None,           # limit low value
             'max' : None,           # limit high value
         },
         'y_axis': {
             'label': None,          # y axis label                  str
             'ticks': 0,             # y label text rotate degree    -90 ~ 90
-            'min' : None,              # limit low value
+            'min' : None,           # limit low value
             'max' : None,           # limit high value
         },
         'legend': {
@@ -65,6 +65,12 @@ class drawChart:
             # Marker
             'marker': 'o',          # draw line on marker           
             'marker_size': 5,       # marker size
+        },
+        'bar': {
+            'width': 1,             # Bar Width                     float over 0
+            'colors': None,         # Bar Colors                    default following matplotlib colors    
+            'stack': True,          # Bar values Stacked            True, False
+            'align': None,          # Bar align                     left, center, right
         },
     }
     
@@ -229,26 +235,137 @@ class drawChart:
         __graphToBytes = BytesIO()
 
         # Draw Graph
-        dfGraph = data.T.copy() if not general['flip'] else data.copy()
-        fig = plt.figure(figsize=general['fig_size'])
+        dfGraph = data.copy() if not general['flip'] else data.T.copy()
+        plt.figure(figsize=general['fig_size'])
         
-        ax = fig.add_subplot(1, 1, 1)
+        print(dfGraph)
         
-        print(dfGraph.T)
+        dfGraph.plot(
+            marker= line['marker'],
+            markersize= line['marker_size'],
+            lw= line['width'],
+            color=line['colors']
+        )
         
-        for i in range(len(data.columns)):
-            if line['colors']:
-                color = line['colors'][i % len(line['colors'])]
-            else:
-                color = None
-            ax.plot(
-                dfGraph.columns,
-                dfGraph.loc[data.columns[i], :],
-                marker= line['marker'],
-                markersize= line['marker_size'],
-                lw= line['width'],
-                color= color
-            )
+        plt.title(general['title'], loc='center')
+        plt.xlim((x_axis['min'], x_axis['max']))
+        plt.ylim((y_axis['min'], y_axis['max']))
+        plt.xlabel(x_axis['label'])
+        plt.ylabel(y_axis['label'])
+        plt.xticks(rotation = x_axis['ticks'])
+        plt.yticks(rotation = y_axis['ticks'])
+        plt.grid(visible=overlay['grid'])
+        plt.legend(labels = data.columns if legend['labels'] == None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        
+        # Graph PNG Setting
+        plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
+        plt.close()
+        
+        # Base64 encoding
+        import base64
+        __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
+        return "data:image/png;base64,%s" % __convBase64
+    
+    
+    # 05.20 그래프 분리
+    # Bar Graph
+    def bar(self, option = dict):
+        """## Bar Graph
+
+        ### Args:
+            general (dict): 
+                ```
+                'general': {
+                    'graph_style': 'ggplot', # graph view style
+                    'fig_size': (12, 5), # graph size  tuple
+                    'title': None, # graph title  str
+                    'label': _data.columns if _data != None else None, # legend label  list | series
+                    'flip': False, # Flip X-Y axis  True, False
+                    'drop_columns': False, # Drop Column on Graph  True, False
+                    'drop_columns_name': [''], # Drop Column Name  list[str]
+                    'drop_column_axis': 0, # Drop Column Axis  0 - horizental, 1 - vertical
+                    'dpi': 200, # Graph Resolution  default = 200
+                }
+                ```
+            x_axis (dict): 
+                ```
+                'x_axis': {
+                    'label': None, # x axis label  str
+                    'ticks': 45, # x label text rotate degree  -90 ~ 90
+                    'min' : None, # limit low value
+                    'max' : None, # limit high value
+                }
+                ```
+            y_axis (dict):
+                ```
+                'y_axis': {
+                    'label': None, # y axis label  str
+                    'ticks': 0, # y label text rotate degree  -90 ~ 90
+                    'min' : None, # limit low value
+                    'max' : None, # limit high value
+                }
+                ```
+            legend (dict): 
+                ```
+                'legend': {
+                    'labels': None, # legend label  columns
+                    'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
+                    'fontsize': 7, # legend fontsize  int
+                }
+                ```
+            overlay (dict): 
+                ```
+                'overlay': {
+                    'grid': True, # graph in grid background  True, False
+                    'axis': 0, # value axis  0 - horizental, 1 - vertical
+                    'tight_layout': False, # graph layout margin  True, False
+                }
+                ```
+            bar (dict):
+                ```
+                'bar': {
+                    'width': 1, # Bar Width  float over 0
+                    'colors': None, # Bar Colors  default following matplotlib colors    
+                    'stack': True, # Bar values Stacked  True, False
+                    'align': None, # Bar align  left, center, right
+                }
+                ```
+        """
+        updated_option = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
+        
+        print(f'Option \n {updated_option}')
+        general = updated_option['general']
+        x_axis = updated_option['x_axis']
+        y_axis = updated_option['y_axis']
+        legend = updated_option['legend']
+        overlay = updated_option['overlay']
+        bar = updated_option['bar']
+        
+        plt.style.use(general['graph_style'])
+        
+        # 원본 보존을 위한 copy
+        data = self._data.copy()
+        
+        # column 삭제 유무
+        if general['drop_columns']:
+            data.T.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
+            print(data)
+        
+        # base64 Encoding을 위한 bytesIO
+        __graphToBytes = BytesIO()
+
+        # Draw Graph
+        dfGraph = data.copy() if not general['flip'] else data.T.copy()
+        plt.figure(figsize=general['fig_size'])
+        
+        print(dfGraph)
+            
+        dfGraph.plot(
+            kind = 'bar',
+            stacked= bar['stack'],
+            lw= bar['width'],
+            color= bar['colors']
+        )
         
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
