@@ -28,7 +28,7 @@ class drawChart:
             # DropColumns
             'drop_columns': False,  # Drop Column on Graph          True, False
             'drop_columns_name': [''], # Drop Column Name           list[str]
-            'drop_column_axis': 0,  # Drop Column Axis              0 - horizental, 1 - vertical
+            'drop_column_axis': 1,  # Drop Column Axis              0 - horizental, 1 - vertical
             
             # Graph resolution
             'dpi': 200,             # Graph Resolution              default = 200
@@ -246,7 +246,7 @@ class drawChart:
         
         # column 삭제 유무
         if general['drop_columns']:
-            data.T.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
+            data.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
             print(f"Deleted Column : {general['drop_columns']}\n{data}")
         
         # base64 Encoding을 위한 bytesIO
@@ -366,7 +366,7 @@ class drawChart:
         
         # column 삭제 유무
         if general['drop_columns']:
-            data.T.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
+            data.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
             print(f"Deleted Column : {general['drop_columns']}\n{data}")
         
         # base64 Encoding을 위한 bytesIO
@@ -511,7 +511,7 @@ class drawChart:
         
         # column 삭제 유무
         if general['drop_columns']:
-            data.T.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
+            data.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
             print(f"Deleted Column : {general['drop_columns']}\n{data}")
         
         # base64 Encoding을 위한 bytesIO
@@ -587,7 +587,7 @@ class drawChart:
                     'flip': False, # Flip X-Y axis  True, False
                     'drop_columns': False, # Drop Column on Graph  True, False
                     'drop_columns_name': [''], # Drop Column Name  list[str]
-                    'drop_column_axis': 0, # Drop Column Axis  0 - horizental, 1 - vertical
+                    'drop_column_axis': 1, # Drop Column Axis  0 - horizental, 1 - vertical
                     'dpi': 200, # Graph Resolution  default = 200
                 }
                 ```
@@ -653,7 +653,7 @@ class drawChart:
         
         # column 삭제 유무
         if general['drop_columns']:
-            data.T.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
+            data.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
             print(f"Deleted Column : {general['drop_columns_name']}\n{data}")
         
         # base64 Encoding을 위한 bytesIO
