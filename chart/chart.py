@@ -73,7 +73,15 @@ class drawChart:
             'align': None,          # Bar align                     center, edge
         },
         'twin': {
-            'twin': 'x'             # Twin Axis                     default x
+            'twin': 'x',            # Twin Axis                     default x  y
+            'x_label': '',          # Twin x label                  str
+            'y_label': '',          # Twin y label                  str
+            'x_min': None,          # Twin x min value              float
+            'x_max': None,          # Twin x max value              float
+            'y_min': None,          # Twin y min value              float
+            'y_max': None,          # Twin y max value              float
+            'legend': 'upper right',# Second Legend location        default 'upper right'
+            'legend_fontsize': 7,   # legend fontsize               int
         },
         'pie': {
             'autopct': '%.2f%%',    # display percentage            default %.2f%%
@@ -473,7 +481,15 @@ class drawChart:
             twin (dict):
                 ```
                 'twin': {
-                    'twin': 'x' # Twin Axis  default x
+                    'twin': 'x', # Twin Axis  default x  y
+                    'x_label': '', # Twin x label  str
+                    'y_label': '', # Twin y label  str
+                    'x_min': None, # Twin x min value  float
+                    'x_max': None, # Twin x max value  float
+                    'y_min': None, # Twin y min value  float
+                    'y_max': None, # Twin y max value  float
+                    'legend': 'upper right', # Second Legend location  default 'upper right'
+                    'legend_fontsize': 7, # legend fontsize  int
                 }
         """
         updated_option = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
@@ -538,15 +554,12 @@ class drawChart:
             ax=linegraph,
         )
         
-        plt.title(general['title'], loc='center')
-        plt.xlim((x_axis['min'], x_axis['max']))
-        plt.ylim((y_axis['min'], y_axis['max']))
-        plt.xlabel(x_axis['label'])
-        plt.ylabel(y_axis['label'])
-        plt.xticks(rotation = x_axis['ticks'])
-        plt.yticks(rotation = y_axis['ticks'])
+        plt.xlim((twin['x_min'], twin['x_max']))
+        plt.ylim((twin['y_min'], twin['y_max']))
+        plt.xlabel(twin['x_label'])
+        plt.ylabel(twin['y_label'])
         plt.grid(visible=overlay['grid'])
-        plt.legend(labels = data.columns if legend['labels'] == None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        plt.legend(labels = data.columns if legend['labels'] == None else legend['labels'], loc=twin['legend'], fontsize=twin['legend_fontsize'])
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
