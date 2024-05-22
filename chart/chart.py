@@ -10,17 +10,31 @@ from io import BytesIO, StringIO
 import json
 from datetime import datetime
 
+### Graph 한글 깨짐 현상 해결 ###
+import platform
+if platform.system() == 'Darwin': #맥
+        plt.rc('font', family='AppleGothic') 
+elif platform.system() == 'Windows': #윈도우
+        plt.rc('font', family='Malgun Gothic') 
+elif platform.system() == 'Linux': #리눅스 
+        plt.rc('font', family='Malgun Gothic') 
+plt.rcParams['axes.unicode_minus'] = False #한글 폰트 사용시 마이너스 폰트 깨짐 해결
+### Graph 한글 깨짐 현상 해결 끝 ###
+
 class drawChart:
     """
         ## Data To Graph
-
-        ### Returns:
-            - Web에서 사용하기 위한 Graph PNG를 Base64로 인코딩해 Return
-            
+        - loadJsonDataToDataframe 로 데이터를 넣어 각 line, bar, twin, pie 함수를 사용하여 base64 인코딩 된 문자열을 받는다.
+        
+        ### Args:
+            loadJsonDataToDataframe: 이 함수로 Jsondata를 인자로 넣어 지정
             line: 선그래프
             bar: 막대형 그래프
             twin: 선, 막대 혼합 그래프
             pie: 원 그래프
+
+        ### Returns:
+            - Web에서 사용하기 위한 Graph PNG를 Base64로 인코딩해 Return
     """
     _data: pd.DataFrame = None
     _len: int = 0
@@ -63,6 +77,7 @@ class drawChart:
             'max' : None,           # limit high value
         },
         'legend': {
+            'title': None,          # legend title                  str
             'labels': None,         # legend label                  columns
             'location': 'best',     # legend location               best, left, center, right, upper [left, center, right], lower [left, center, right]
             'fontsize': 7,          # legend fontsize               int
@@ -80,7 +95,7 @@ class drawChart:
             'style': '-',           # Line Style                    default = '-', '--' '-.' ':'
             'colors': None,         # Line Colors                   default following matplotlib colors    
             # Marker
-            'marker': 'o',          # draw line on marker           
+            'marker': None,          # draw line on marker           
             'marker_size': 5,       # marker size
         },
         'bar': {
@@ -118,7 +133,7 @@ class drawChart:
         pass
     
     # 받은 데이터가 한개, 한개 이상일 때로 구분하여 DataFrame 형태로 변경
-    def seperateJSONResult(self, originJsonData = None, index_column = '_time'):
+    def seperateJSONResult(self, originJsonData = None, index: str = None):
         __jsonType = type(json.loads(originJsonData)["result"])
         
         # Result 데이터가 1개 일때
@@ -134,7 +149,7 @@ class drawChart:
         
         # index로 지정할 컬럼 유무 체크
         try:
-            __jsondata.set_index(index_column, inplace=True)
+            __jsondata.set_index(index if index != None else __jsondata.columns[0], inplace=True)
         except:
             print(__jsondata)
             raise print("Not Exist column for using index \n Check Columns")
@@ -147,7 +162,7 @@ class drawChart:
 
     # Graph를 그리기 위한 Data 정제 과정
     # 데이터를 받아 하나의 DataFrame으로 병합
-    def loadJsonDataToDataframe(self, jsondata: dict = None):
+    def loadJsonDataToDataframe(self, jsondata: dict = None, index: str = None):
         """
             ## JsonData를 받아 Graph를 그리기 위해 DataFrame으로 정제
 
@@ -157,7 +172,7 @@ class drawChart:
             ### Returns:
                 self._data: Json Data To DataFrame
         """
-        __jsondata = self.seperateJSONResult(jsondata)
+        __jsondata = self.seperateJSONResult(jsondata, index)
         
         # print(f' __len = {__len}')
         # if __len > 1:
@@ -182,17 +197,17 @@ class drawChart:
     # 현재 미사용
     # 시간 값을 년-월-일 시:분:초로 변경하는 과정
     @staticmethod
-    def tranform_datetype(beforeDatetime):        
+    def tranformDatetype(beforeDatetime):        
         return datetime.fromisoformat(beforeDatetime[:-5]).strftime('%Y-%m-%d %H:%M:%S')
     
     # 빈 옵션에 Default 옵션을 지정하기 위한 함수
-    def optionUpdate(self, default_option, overrides_option):
-        for k, v in overrides_option.items():
-            if isinstance(v, dict) and k in default_option:
-                default_option[k] = self.optionUpdate(default_option.get(k, {}), v)
+    def optionUpdate(self, defaultOption, overridesOption):
+        for k, v in overridesOption.items():
+            if isinstance(v, dict) and k in defaultOption:
+                defaultOption[k] = self.optionUpdate(defaultOption.get(k, {}), v)
             else:
-                default_option[k] = v
-        return default_option
+                defaultOption[k] = v
+        return defaultOption
     
     # 05.17 그래프 분리
     # Line Graph
@@ -235,6 +250,7 @@ class drawChart:
             legend (dict): 
                 ```
                 'legend': {
+                    'title': None, # legend title  str
                     'labels': None, # legend label  columns
                     'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
                     'fontsize': 7, # legend fontsize  int
@@ -259,15 +275,15 @@ class drawChart:
                 }
                 ```
         """
-        updated_option = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
+        updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
         
-        print(f'Option \n {updated_option}')
-        general = updated_option['general']
-        x_axis = updated_option['x_axis']
-        y_axis = updated_option['y_axis']
-        legend = updated_option['legend']
-        overlay = updated_option['overlay']
-        line = updated_option['line']
+        print(f'Option \n {updatedOption}')
+        general = updatedOption['general']
+        x_axis = updatedOption['x_axis']
+        y_axis = updatedOption['y_axis']
+        legend = updatedOption['legend']
+        overlay = updatedOption['overlay']
+        line = updatedOption['line']
         
         plt.style.use(general['graph_style'])
         
@@ -286,7 +302,7 @@ class drawChart:
         dfGraph = data.copy() if not general['flip'] else data.T.copy()
         plt.figure(figsize=general['fig_size'])
         
-        # print(dfGraph)
+        print(dfGraph)
         
         dfGraph.plot(
             marker= line['marker'],
@@ -303,7 +319,7 @@ class drawChart:
         plt.xticks(rotation = x_axis['ticks'])
         plt.yticks(rotation = y_axis['ticks'])
         plt.grid(visible=overlay['grid'])
-        plt.legend(labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
@@ -356,6 +372,7 @@ class drawChart:
             legend (dict): 
                 ```
                 'legend': {
+                    'title': None, # legend title  str
                     'labels': None, # legend label  columns
                     'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
                     'fontsize': 7, # legend fontsize  int
@@ -379,15 +396,15 @@ class drawChart:
                 }
                 ```
         """
-        updated_option = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
+        updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
         
-        print(f'Option \n {updated_option}')
-        general = updated_option['general']
-        x_axis = updated_option['x_axis']
-        y_axis = updated_option['y_axis']
-        legend = updated_option['legend']
-        overlay = updated_option['overlay']
-        bar = updated_option['bar']
+        print(f'Option \n {updatedOption}')
+        general = updatedOption['general']
+        x_axis = updatedOption['x_axis']
+        y_axis = updatedOption['y_axis']
+        legend = updatedOption['legend']
+        overlay = updatedOption['overlay']
+        bar = updatedOption['bar']
         
         plt.style.use(general['graph_style'])
         
@@ -423,7 +440,7 @@ class drawChart:
         plt.xticks(rotation = x_axis['ticks'])
         plt.yticks(rotation = y_axis['ticks'])
         plt.grid(visible=overlay['grid'])
-        plt.legend(labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
@@ -476,6 +493,7 @@ class drawChart:
             legend (dict): 
                 ```
                 'legend': {
+                    'title': None, # legend title  str
                     'labels': None, # legend label  columns
                     'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
                     'fontsize': 7, # legend fontsize  int
@@ -522,17 +540,17 @@ class drawChart:
                     'legend_fontsize': 7, # legend fontsize  int
                 }
         """
-        updated_option = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
+        updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
         
-        print(f'Option \n {updated_option}')
-        general = updated_option['general']
-        x_axis = updated_option['x_axis']
-        y_axis = updated_option['y_axis']
-        legend = updated_option['legend']
-        overlay = updated_option['overlay']
-        line = updated_option['line']
-        bar = updated_option['bar']
-        twin = updated_option['twin']
+        print(f'Option \n {updatedOption}')
+        general = updatedOption['general']
+        x_axis = updatedOption['x_axis']
+        y_axis = updatedOption['y_axis']
+        legend = updatedOption['legend']
+        overlay = updatedOption['overlay']
+        line = updatedOption['line']
+        bar = updatedOption['bar']
+        twin = updatedOption['twin']
         
         plt.style.use(general['graph_style'])
         
@@ -570,10 +588,10 @@ class drawChart:
         plt.ylabel(y_axis['label'])
         plt.xticks(rotation = x_axis['ticks'])
         plt.yticks(rotation = y_axis['ticks'])
-        plt.legend(labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        plt.legend(title='Bar', labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Twinx | Twiny
-        linegraph = bargraph.twinx() if twin['twin'] is 'x' else bargraph.twiny()
+        linegraph = bargraph.twinx() if twin['twin'] == 'x' else bargraph.twiny()
         
         # Line Graph
         dfGraph.plot(
@@ -589,7 +607,7 @@ class drawChart:
         plt.xlabel(twin['x_label'])
         plt.ylabel(twin['y_label'])
         plt.grid(visible=overlay['grid'])
-        plt.legend(labels = data.columns if legend['labels'] is None else legend['labels'], loc=twin['legend'], fontsize=twin['legend_fontsize'])
+        plt.legend(title='Line', labels = data.columns if legend['labels'] is None else legend['labels'], loc=twin['legend'], fontsize=twin['legend_fontsize'])
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
@@ -642,6 +660,7 @@ class drawChart:
             legend (dict): 
                 ```
                 'legend': {
+                    'title': None, # legend title  str
                     'labels': None, # legend label  columns
                     'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
                     'fontsize': 7, # legend fontsize  int
@@ -670,15 +689,15 @@ class drawChart:
                 }
                 ```
         """
-        updated_option = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
+        updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
         
-        print(f'Option \n {updated_option}')
-        general = updated_option['general']
-        x_axis = updated_option['x_axis']
-        y_axis = updated_option['y_axis']
-        legend = updated_option['legend']
-        overlay = updated_option['overlay']
-        pie = updated_option['pie']
+        print(f'Option \n {updatedOption}')
+        general = updatedOption['general']
+        x_axis = updatedOption['x_axis']
+        y_axis = updatedOption['y_axis']
+        legend = updatedOption['legend']
+        overlay = updatedOption['overlay']
+        pie = updatedOption['pie']
         
         plt.style.use(general['graph_style'])
         
@@ -722,7 +741,7 @@ class drawChart:
         plt.xticks(rotation = x_axis['ticks'])
         plt.yticks(rotation = y_axis['ticks'])
         plt.grid(visible=overlay['grid'])
-        plt.legend(labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
