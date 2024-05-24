@@ -10,7 +10,6 @@ import json
 import dateutil.parser
 import numpy as np
 from io import BytesIO, StringIO
-import os
 
 
 # 한글 폰트 문제 해결 
@@ -102,7 +101,8 @@ class drawChart:
             '#184B81'
         ]
     }
-    _data: pd.DataFrame = None
+    _data: list = []
+    # _data: pd.DataFrame = None
     _len: int = 0
     
     # OPTIONS
@@ -117,7 +117,7 @@ class drawChart:
             ## GRAPH View Settings
             ### GRAPH TEXT
             'title': None,          # graph title                   str
-            'label': _data.columns if _data != None else None, # legend label                  list | series
+            'label': None,#_data.keys() if _data != None else None, # legend label                  list | series
             
             # Flip x - y
             'flip': False,          # Flip X-Y axis                 True, False
@@ -201,16 +201,16 @@ class drawChart:
     
     # 받은 데이터가 한개, 한개 이상일 때로 구분하여 DataFrame 형태로 변경
     def seperateJSONResult(self, originJsonData = None, index: str = None):
-        __jsonType = type(json.loads(originJsonData)["result"])
+        __jsonType = type(originJsonData)
         
         # Result 데이터가 1개 일때
         if __jsonType == dict:
-            __jsondata = pd.read_json(StringIO(originJsonData))["result"]
+            __jsondata = pd.read_json(StringIO(originJsonData))
             __jsondata = __jsondata.to_frame().T
             
         # Result 데이터가 1개 이상 일 때
         else:
-            __jsondata = pd.DataFrame.from_records(json.loads(originJsonData)['result'])
+            __jsondata = pd.DataFrame.from_records(originJsonData)
 
         __jsondata.reset_index(drop=True, inplace=True)
         
@@ -228,6 +228,22 @@ class drawChart:
         self._len = len(__jsondata)
         
         return __jsondata
+    
+    def seperateJSONResult_json(self, originJsonData = None, index: str = None):
+        result_data = originJsonData
+        
+        if isinstance(result_data, dict):
+            json_data = [result_data]
+        else:
+            json_data = result_data
+        
+        for item in json_data:
+            for key, value in item.items():
+                if value == '':
+                    item[key] = None
+        
+        self._len = len(json_data)
+        return json_data
 
 
     # Graph를 그리기 위한 Data 정제 과정
@@ -242,6 +258,7 @@ class drawChart:
             ### Returns:
                 self._data: Json Data To DataFrame
         """
+        print(jsondata)
         __jsondata = self.seperateJSONResult(jsondata, index)
         
         # print(f' __len = {__len}')
@@ -263,6 +280,13 @@ class drawChart:
 
         return self._data
     
+    
+    def loadJsonDataToDict(self, jsondata: dict = None, index: str = None):
+        json_data = self.seperateJSONResult_json(jsondata, index)
+        
+        self._data.extend(json_data)
+
+        return self._data
     
     # 현재 미사용
     # 시간 값을 년-월-일 시:분:초로 변경하는 함수
@@ -360,26 +384,62 @@ class drawChart:
         # 원본 보존을 위한 copy
         data = self._data.copy()
         
+        print('\n', data)
+        
         # column 삭제 유무
         if general['drop_columns']:
-            data.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
-            print(f"Deleted Column : {general['drop_columns']}\n{data}")
+            for col in general['drop_columns_name']:
+                for item in data:
+                    if col in item:
+                        del item[col]
+        # if general['drop_columns']:
+        #     data.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
+        #     print(f"Deleted Column : {general['drop_columns']}\n{data}")
         
         # base64 Encoding을 위한 bytesIO
         __graphToBytes = BytesIO()
 
         # Draw Graph
-        dfGraph = data.copy() if not general['flip'] else data.T.copy()
-        plt.figure(figsize=general['fig_size'])
+        dfGraph = {key: [d[key] for d in data if key in d] for key in data[0].keys()}
+        # dfGraph = data.copy() if not general['flip'] else data.T.copy()
+        fig, ax = plt.subplots(figsize=general['fig_size'])
         
-        print(dfGraph)
+        # for item in data:
+        #     print(item, '\n')
+            
+        x = []
+        y = []
+        label_x = []
+        label_y = []
         
-        ax = dfGraph.plot(
+        tmp = {}
+        
+        for item in data:
+            item = dict(item)
+            label_x = list(item.keys())
+            for _ in range(len(item)):
+                x.append(item[label_x[0]])
+                y.append(int(item[label_x[1]]))
+        print(label_x)
+        # print(list(test.values())[1])
+        ax.plot(
+            x,
+            y,
             marker= line['marker'],
             markersize= line['marker_size'],
             lw= line['width'],
-            color=line['colors']
+            # color=line['colors']
         )
+        # ax = plt.plot(
+        #     times,
+        #     log_levels,
+        #     # kind='line',
+        #     marker= line['marker'],
+        #     markersize= line['marker_size'],
+        #     lw= line['width'],
+        #     label=list(dfGraph.values())[0],
+        #     # color=line['colors']
+        # )
         
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
@@ -388,15 +448,15 @@ class drawChart:
         plt.ylabel(y_axis['label'], fontsize=y_axis['fontsize'])
         plt.xticks(rotation = x_axis['ticks'])
         # 표현해야 될 데이터 많을 시 x 축 값 정리
-        if len(dfGraph.index) > 10:
-            ax.set_xticks(np.arange(0, len(dfGraph.index)+1, round(len(dfGraph.index) % 10)))
+        if len(dfGraph.keys()) > 10:
+            ax.set_xticks(np.arange(0, len(dfGraph.keys())+1, round(len(dfGraph.keys()) % 10)))
             
         plt.yticks(rotation = y_axis['ticks'])
         plt.grid(visible=overlay['grid'])
         
         # legend on/off
         if overlay['legend']:
-            plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+            plt.legend(title= legend['title'], labels = label_x[1:] if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=general['dpi'], bbox_inches='tight')
