@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 # from texteditor.pythonPanel import panel
 from module.loadData import loadJsonDataForSpreadSheet, loadJsonDataForGraph
 from chart.chart import drawChart
-import os
+import os, json
 
 
 
@@ -24,15 +24,19 @@ async def home(request: Request):
     
     graph = drawChart()
     # RestApi를 통해 json 을 받는 다는 가정으로 해당에 맞게 데이터 정제
-    jsondata = open(f"{os.path.realpath('.')}/static/data/1716351565_114.json", 'rb')
-    jsondata = jsondata.read().decode('utf-8')
-    jsondataList = jsondata.split('\n')[:-1]
+    jsondata = open(f"{os.path.realpath('.')}/static/data/test.json", 'rb').read().decode('utf-8').replace('\\', '')
+    jsondata = json.dumps(jsondata)
+    # jsondataList = jsondata.split('\n')[:-1]
+    
+    jsondataList = eval(json.loads(jsondata))
     
     print(f'Lines : {len(jsondataList)}')
     # 현재 json 데이터가 각 줄별로 데이터 날아 온 것처럼 합쳐져 있어 아래와 같이 나눠서 보냄
     # Response 내 "result" 항목이 하나라면 graph.loadJsonDataToDataframe(jsondata) 같이 사용
-    for i in range(len(jsondataList)):
-        graph.loadJsonDataToDataframe(jsondataList[i])#, index='Malware Analysis')
+    # for i in range(len(jsondataList)):
+    #     graph.loadJsonDataToDataframe(jsondataList[i])#, index='Malware Analysis')
+    
+    graph.loadJsonDataToDict(jsondataList)
     
     linechart = graph.line({
         'general' : {
