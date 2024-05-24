@@ -389,7 +389,8 @@ class drawChart:
         plt.xticks(rotation = x_axis['ticks'])
         plt.yticks(rotation = y_axis['ticks'])
         plt.grid(visible=overlay['grid'])
-        plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        if overlay['legend']:
+            plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=general['dpi'], bbox_inches='tight')
@@ -514,7 +515,8 @@ class drawChart:
             ax.set_xticks(np.arange(0, len(dfGraph.index)+1, round(len(dfGraph.index) % 10)))
         plt.yticks(rotation = y_axis['ticks'])
         plt.grid(visible=overlay['grid'])
-        plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        if overlay['legend']:
+            plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
@@ -666,7 +668,8 @@ class drawChart:
         if len(dfGraph.index) > 10:
             ax.set_xticks(np.arange(0, len(dfGraph.index)+1, round(len(dfGraph.index) % 10)))
         plt.yticks(rotation = y_axis['ticks'])
-        plt.legend(title='Bar', labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        if overlay['legend']:
+            plt.legend(title='Bar', labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Twinx | Twiny
         linegraph = bargraph.twinx() if twin['twin'] == 'x' else bargraph.twiny()
@@ -685,7 +688,8 @@ class drawChart:
         plt.xlabel(twin['x_label'])
         plt.ylabel(twin['y_label'])
         plt.grid(visible=overlay['grid'])
-        plt.legend(title='Line', labels = data.columns if legend['labels'] is None else legend['labels'], loc=twin['legend'], fontsize=twin['legend_fontsize'])
+        if overlay['legend']:
+            plt.legend(title='Line', labels = data.columns if legend['labels'] is None else legend['labels'], loc=twin['legend'], fontsize=twin['legend_fontsize'])
         
         # tight_layout
         if twin['tight_layout']:
@@ -826,7 +830,8 @@ class drawChart:
             )        
         
         plt.title(general['title'], loc='center')
-        plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
+        if overlay['legend']:
+            plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')

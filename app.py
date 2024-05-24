@@ -34,105 +34,105 @@ async def home(request: Request):
     for i in range(len(jsondataList)):
         graph.loadJsonDataToDataframe(jsondataList[i])#, index='Malware Analysis')
     
-    # linechart = graph.line({
-    #     'general' : {
-    #         'graph_style': 'ggplot',
-    #         'fig_size': (20, 5),
-    #         'title': 'Status Day',
-    #         'flip': False,
-    #         # 'drop_columns': True,
-    #         # 'drop_columns_name': ['NULL', '200', '404']
-    #     },
-    #     'x_axis': {
-    #         'label': 'Day',
-    #         'ticks': 45,
-    #         # 'min': 0,
-    #         # 'max': 10
-    #     },
-    #     'y_axis': {
-    #         'label': 'Status',
-    #         'ticks': 0,
-    #         'min' : 0,
-    #         # 'max' : 250000,
-    #     },
-    #     'legend': {
-    #         'location': 'best',
-    #         'fontsize': 7,
-    #     },
-    #     'line': {
-    #         # 'marker': None
-    #         # 'colors': ['r', 'g']
-    #     }
-    # })
+    linechart = graph.line({
+        'general' : {
+            'graph_style': 'ggplot',
+            'fig_size': (20, 5),
+            'title': 'Status Day',
+            'flip': False,
+            # 'drop_columns': True,
+            # 'drop_columns_name': ['NULL', '200', '404']
+        },
+        'x_axis': {
+            'label': 'Day',
+            'ticks': 45,
+            # 'min': 0,
+            # 'max': 10
+        },
+        'y_axis': {
+            'label': 'Status',
+            'ticks': 0,
+            'min' : 0,
+            # 'max' : 250000,
+        },
+        'legend': {
+            'location': 'best',
+            'fontsize': 7,
+        },
+        'line': {
+            # 'marker': None
+            # 'colors': ['r', 'g']
+        }
+    })
     
-    # barchart = graph.bar({
-    #     'general' : {
-    #         'graph_style': 'ggplot',
-    #         'fig_size': (20, 5),
-    #         'title': 'Status Day',
-    #         'flip': False,
-    #         # 'drop_columns': True,
-    #         # 'drop_columns_name': ['NULL', '200', '404']
-    #     },
-    #     'x_axis': {
-    #         'label': 'Day',
-    #         'ticks': 45,
-    #         # 'min': 0,
-    #         # 'max': 10
-    #     },
-    #     'y_axis': {
-    #         'label': 'Status',
-    #         'ticks': 0,
-    #         'min' : 0,
-    #         # 'max' : 250000,
-    #     },
-    #     'legend': {
-    #         'location': 'best',
-    #         'fontsize': 7,
-    #     },
-    #     'bar': {
-    #         'stack': True,
-    #         # 'colors': ['r', 'g']
-    #     }
-    # })
+    barchart = graph.bar({
+        'general' : {
+            'graph_style': 'ggplot',
+            'fig_size': (20, 5),
+            'title': 'Status Day',
+            'flip': False,
+            # 'drop_columns': True,
+            # 'drop_columns_name': ['NULL', '200', '404']
+        },
+        'x_axis': {
+            'label': 'Day',
+            'ticks': 45,
+            # 'min': 0,
+            # 'max': 10
+        },
+        'y_axis': {
+            'label': 'Status',
+            'ticks': 0,
+            'min' : 0,
+            # 'max' : 250000,
+        },
+        'legend': {
+            'location': 'best',
+            'fontsize': 7,
+        },
+        'bar': {
+            'stack': True,
+            # 'colors': ['r', 'g']
+        }
+    })
     
-    # twinchart = graph.twin({
-    #     'general' : {
-    #         'graph_style': 'ggplot',
-    #         'fig_size': (12, 5),
-    #         'title': 'Status Day',
-    #         'flip': False,
-    #         # 'drop_columns': True,
-    #         # 'drop_columns_name': ['NULL', '200', '404']
-    #     },
-    #     'x_axis': {
-    #         'label': 'Day',
-    #         'ticks': 45,
-    #         # 'min': 0,
-    #         # 'max': 10
-    #     },
-    #     'y_axis': {
-    #         'label': 'Status',
-    #         'ticks': 0,
-    #         'min' : 0,
-    #         # 'max' : 250000,
-    #     },
-    #     'legend': {
-    #         'location': 'upper left',
-    #         'fontsize': 7,
-    #     },
-    #     'line': {
-    #         # 'colors': ['r', 'g']
-    #     },
-    #     'bar': {
-    #         'stack': True,
-    #         'align': 'edge'
-    #         # 'colors': ['r', 'g']
-    #     },
-    #     'twin': {
-    #         'twin': 'x'
-    #     }
-    # })
+    twinchart = graph.twin({
+        'general' : {
+            'graph_style': 'ggplot',
+            'fig_size': (12, 5),
+            'title': 'Status Day',
+            'flip': False,
+            # 'drop_columns': True,
+            # 'drop_columns_name': ['NULL', '200', '404']
+        },
+        'x_axis': {
+            'label': 'Day',
+            'ticks': 45,
+            # 'min': 0,
+            # 'max': 10
+        },
+        'y_axis': {
+            'label': 'Status',
+            'ticks': 0,
+            'min' : 0,
+            # 'max' : 250000,
+        },
+        'legend': {
+            'location': 'upper left',
+            'fontsize': 7,
+        },
+        'line': {
+            # 'colors': ['r', 'g']
+        },
+        'bar': {
+            'stack': True,
+            'align': 'edge'
+            # 'colors': ['r', 'g']
+        },
+        'twin': {
+            'twin': 'x'
+        }
+    })
     
     piechart = graph.pie({
         'general' : {
@@ -159,6 +159,9 @@ async def home(request: Request):
             'location': 'best',
             'fontsize': 7,
         },
+        'overlay': {
+            'legend': False,
+        },
         'pie': {
             'autopct': '%.2f%%',
             'startangle': 10,
@@ -174,7 +177,7 @@ async def home(request: Request):
     # twinchart = graph.drawGraph(kind='twin', twinx=True, stacked=False, xticks=45, xlabel='DAY', ylabel='COUNT', title='Bar Width Line')
     # barchart = graph.drawGraph(kind='bar', witdh=0.7, stacked=True, xticks=45, xlabel='DAY', ylabel='COUNT')
     # piechart = graph.drawGraph(kind='pie', dropcolumn=['NULL', '200'], figsize=(12, 5))
-    resultImages = [piechart]#[linechart, barchart, twinchart, piechart]
+    resultImages = [linechart, barchart, twinchart, piechart]
     return templates.TemplateResponse("index.html",{"request":request, "images": resultImages, "count": len(resultImages)})
 
 
