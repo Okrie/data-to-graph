@@ -24,7 +24,7 @@ async def home(request: Request):
     
     graph = drawChart()
     # RestApi를 통해 json 을 받는 다는 가정으로 해당에 맞게 데이터 정제
-    jsondata = open(f"{os.path.realpath('.')}/static/data/1715043362_19.json", 'rb')
+    jsondata = open(f"{os.path.realpath('.')}/static/data/1716351565_114.json", 'rb')
     jsondata = jsondata.read().decode('utf-8')
     jsondataList = jsondata.split('\n')[:-1]
     
@@ -32,115 +32,116 @@ async def home(request: Request):
     # 현재 json 데이터가 각 줄별로 데이터 날아 온 것처럼 합쳐져 있어 아래와 같이 나눠서 보냄
     # Response 내 "result" 항목이 하나라면 graph.loadJsonDataToDataframe(jsondata) 같이 사용
     for i in range(len(jsondataList)):
-        graph.loadJsonDataToDataframe(jsondataList[i])
+        graph.loadJsonDataToDataframe(jsondataList[i])#, index='Malware Analysis')
     
-    linechart = graph.line({
-        'general' : {
-            'graph_style': 'ggplot',
-            'fig_size': (12, 5),
-            'title': 'Status Day',
-            'flip': False,
-            'drop_columns': True,
-            'drop_columns_name': ['NULL', '200', '404']
-        },
-        'x_axis': {
-            'label': 'Day',
-            'ticks': 45,
-            'min': 0,
-            # 'max': 10
-        },
-        'y_axis': {
-            'label': 'Status',
-            'ticks': 0,
-            'min' : 0,
-            # 'max' : 250000,
-        },
-        'legend': {
-            'location': 'best',
-            'fontsize': 7,
-        },
-        # 'line': {
-        #     'colors': ['r', 'g']
-        # }
-    })
+    # linechart = graph.line({
+    #     'general' : {
+    #         'graph_style': 'ggplot',
+    #         'fig_size': (20, 5),
+    #         'title': 'Status Day',
+    #         'flip': False,
+    #         # 'drop_columns': True,
+    #         # 'drop_columns_name': ['NULL', '200', '404']
+    #     },
+    #     'x_axis': {
+    #         'label': 'Day',
+    #         'ticks': 45,
+    #         # 'min': 0,
+    #         # 'max': 10
+    #     },
+    #     'y_axis': {
+    #         'label': 'Status',
+    #         'ticks': 0,
+    #         'min' : 0,
+    #         # 'max' : 250000,
+    #     },
+    #     'legend': {
+    #         'location': 'best',
+    #         'fontsize': 7,
+    #     },
+    #     'line': {
+    #         # 'marker': None
+    #         # 'colors': ['r', 'g']
+    #     }
+    # })
     
-    barchart = graph.bar({
-        'general' : {
-            'graph_style': 'ggplot',
-            'fig_size': (12, 5),
-            'title': 'Status Day',
-            'flip': False,
-            'drop_columns': True,
-            'drop_columns_name': ['NULL', '200', '404']
-        },
-        'x_axis': {
-            'label': 'Day',
-            'ticks': 45,
-            'min': 0,
-            # 'max': 10
-        },
-        'y_axis': {
-            'label': 'Status',
-            'ticks': 0,
-            'min' : 0,
-            # 'max' : 250000,
-        },
-        'legend': {
-            'location': 'best',
-            'fontsize': 7,
-        },
-        'bar': {
-            'stack': True,
-            # 'colors': ['r', 'g']
-        }
-    })
+    # barchart = graph.bar({
+    #     'general' : {
+    #         'graph_style': 'ggplot',
+    #         'fig_size': (20, 5),
+    #         'title': 'Status Day',
+    #         'flip': False,
+    #         # 'drop_columns': True,
+    #         # 'drop_columns_name': ['NULL', '200', '404']
+    #     },
+    #     'x_axis': {
+    #         'label': 'Day',
+    #         'ticks': 45,
+    #         # 'min': 0,
+    #         # 'max': 10
+    #     },
+    #     'y_axis': {
+    #         'label': 'Status',
+    #         'ticks': 0,
+    #         'min' : 0,
+    #         # 'max' : 250000,
+    #     },
+    #     'legend': {
+    #         'location': 'best',
+    #         'fontsize': 7,
+    #     },
+    #     'bar': {
+    #         'stack': True,
+    #         # 'colors': ['r', 'g']
+    #     }
+    # })
     
-    twinchart = graph.twin({
-        'general' : {
-            'graph_style': 'ggplot',
-            'fig_size': (12, 5),
-            'title': 'Status Day',
-            'flip': False,
-            'drop_columns': True,
-            'drop_columns_name': ['NULL', '200', '404']
-        },
-        'x_axis': {
-            'label': 'Day',
-            'ticks': 45,
-            'min': 0,
-            # 'max': 10
-        },
-        'y_axis': {
-            'label': 'Status',
-            'ticks': 0,
-            'min' : 0,
-            # 'max' : 250000,
-        },
-        'legend': {
-            'location': 'upper left',
-            'fontsize': 7,
-        },
-        'line': {
-            # 'colors': ['r', 'g']
-        },
-        'bar': {
-            'stack': True,
-            'align': 'edge'
-            # 'colors': ['r', 'g']
-        },
-        'twin': {
-            'twin': 'x'
-        }
-    })
+    # twinchart = graph.twin({
+    #     'general' : {
+    #         'graph_style': 'ggplot',
+    #         'fig_size': (12, 5),
+    #         'title': 'Status Day',
+    #         'flip': False,
+    #         # 'drop_columns': True,
+    #         # 'drop_columns_name': ['NULL', '200', '404']
+    #     },
+    #     'x_axis': {
+    #         'label': 'Day',
+    #         'ticks': 45,
+    #         # 'min': 0,
+    #         # 'max': 10
+    #     },
+    #     'y_axis': {
+    #         'label': 'Status',
+    #         'ticks': 0,
+    #         'min' : 0,
+    #         # 'max' : 250000,
+    #     },
+    #     'legend': {
+    #         'location': 'upper left',
+    #         'fontsize': 7,
+    #     },
+    #     'line': {
+    #         # 'colors': ['r', 'g']
+    #     },
+    #     'bar': {
+    #         'stack': True,
+    #         'align': 'edge'
+    #         # 'colors': ['r', 'g']
+    #     },
+    #     'twin': {
+    #         'twin': 'x'
+    #     }
+    # })
     
     piechart = graph.pie({
         'general' : {
             'graph_style': 'ggplot',
-            'fig_size': (12, 5),
+            'fig_size': (12, 6),
             'title': 'Status Day',
             'flip': False,
-            'drop_columns': True,
-            'drop_columns_name': ['NULL', '200', '404']
+            # 'drop_columns': True,
+            # 'drop_columns_name': ['NULL', '200', '404']
         },
         'x_axis': {
             'label': 'Day',
@@ -162,8 +163,9 @@ async def home(request: Request):
             'autopct': '%.2f%%',
             'startangle': 10,
             'shadow': False,
-            'radius': 1,
-            'explode': [0.05, 0, 0, 0, 0, 0, 0, 0, 0]
+            'radius': 0.8,
+            # 'explode': [0.05, 0, 0, 0, 0, 0, 0, 0, 0],
+            'arrow': True
         }
     })
     
@@ -172,7 +174,7 @@ async def home(request: Request):
     # twinchart = graph.drawGraph(kind='twin', twinx=True, stacked=False, xticks=45, xlabel='DAY', ylabel='COUNT', title='Bar Width Line')
     # barchart = graph.drawGraph(kind='bar', witdh=0.7, stacked=True, xticks=45, xlabel='DAY', ylabel='COUNT')
     # piechart = graph.drawGraph(kind='pie', dropcolumn=['NULL', '200'], figsize=(12, 5))
-    resultImages = [linechart, barchart, twinchart, piechart]
+    resultImages = [piechart]#[linechart, barchart, twinchart, piechart]
     return templates.TemplateResponse("index.html",{"request":request, "images": resultImages, "count": len(resultImages)})
 
 

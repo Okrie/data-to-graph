@@ -6,20 +6,36 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from io import BytesIO, StringIO
 import json
-from datetime import datetime
+import dateutil.parser
+import numpy as np
+from io import BytesIO, StringIO
+import os
 
-### Graph 한글 깨짐 현상 해결 ###
+
+# 한글 폰트 문제 해결 
+# matplotlib은 한글 폰트를 지원하지 않음
+# os정보
 import platform
-if platform.system() == 'Darwin': #맥
-        plt.rc('font', family='AppleGothic') 
-elif platform.system() == 'Windows': #윈도우
-        plt.rc('font', family='Malgun Gothic') 
-elif platform.system() == 'Linux': #리눅스 
-        plt.rc('font', family='Malgun Gothic') 
-plt.rcParams['axes.unicode_minus'] = False #한글 폰트 사용시 마이너스 폰트 깨짐 해결
+
+# font_manager : 폰트 관리 모듈
+# rc : 폰트 변경 모듈
+from matplotlib import font_manager, rc
+font_manager.fontManager
+# unicode 설정
+plt.rcParams['axes.unicode_minus'] = False
+
+if platform.system() == 'Darwin': # macos
+    rc('font', family='AppleGothic')
+elif platform.system() == 'Windows': # windows
+    path = 'c:/Windows/Fonts/malgun.ttf'
+    font_name = font_manager.FontProperties(fname=path).get_name()
+    rc('font', family=font_name)
+else:
+    print("Unknown System")
+    plt.rc('font', family='Nanum Gothic')
 ### Graph 한글 깨짐 현상 해결 끝 ###
+
 
 class drawChart:
     """
@@ -36,6 +52,56 @@ class drawChart:
         ### Returns:
             - Web에서 사용하기 위한 Graph PNG를 Base64로 인코딩해 Return
     """
+    __SPLUNK_BASE_COLOR_MAP = {
+        'base': [
+            '#7B5547',
+            '#77D6D8',
+            '#4A7F2C',
+            '#F589AD',
+            '#6A2C5D',
+            '#AAABAE',
+            '#9A7438',
+            '#A4D563',
+            '#7672A4',
+            '#184B81'
+        ],
+        'categorical_1': [
+            '#006D9C',
+            '#4FA484',
+            '#EC9960',
+            '#AF575A',
+            '#B6C75A',
+            '#62B3B2',
+            '#294E70',
+            '#738795',
+            '#EDD051',
+            '#BD9872'
+        ],
+        'categorical_2': [
+            '#5A4575',
+            '#7EA77B',
+            '#708794',
+            '#D7C6B0',
+            '#339BB2',
+            '#55672D',
+            '#E6E1A0',
+            '#96907F',
+            '#87BC65',
+            '#CF7E60'
+        ],
+        'categorical_3': [
+            '#7B5547',
+            '#77D6D8',
+            '#4A7F2C',
+            '#F589AD',
+            '#6A2C5D',
+            '#AAABAE',
+            '#9A7438',
+            '#A4D563',
+            '#7672A4',
+            '#184B81'
+        ]
+    }
     _data: pd.DataFrame = None
     _len: int = 0
     
@@ -66,15 +132,22 @@ class drawChart:
         },
         'x_axis': {
             'label': None,          # x axis label                  str
+            'fontsize': 5,          # x label fontsize              default 5
             'ticks': 45,            # x label text rotate degree    -90 ~ 90
             'min' : None,           # limit low value
             'max' : None,           # limit high value
         },
         'y_axis': {
             'label': None,          # y axis label                  str
+            'fontsize': 5,          # y label fontsize              default 5
             'ticks': 0,             # y label text rotate degree    -90 ~ 90
             'min' : None,           # limit low value
             'max' : None,           # limit high value
+        },
+        'overlay': {
+            ### GRID, Legend
+            'grid': True,           # graph in grid background      True, False
+            'legend': True,         # graph on legend On / Off      True, False
         },
         'legend': {
             'title': None,          # legend title                  str
@@ -82,25 +155,17 @@ class drawChart:
             'location': 'best',     # legend location               best, left, center, right, upper [left, center, right], lower [left, center, right]
             'fontsize': 7,          # legend fontsize               int
         },
-        'overlay': {
-            ### GRID, AXIS
-            'grid': True,           # graph in grid background      True, False
-            'axis': 0,              # value axis                    0 - horizental, 1 - vertical
-            
-            ## GRAPH layout margin
-            'tight_layout': False,  # graph layout margin           True, False
-        },
         'line': {
             'width': 1,             # Line Width                    float over 0
             'style': '-',           # Line Style                    default = '-', '--' '-.' ':'
-            'colors': None,         # Line Colors                   default following matplotlib colors    
+            'colors': __SPLUNK_BASE_COLOR_MAP['base'], # Line Colors    default on SPLUNK color map
             # Marker
-            'marker': None,          # draw line on marker           
+            'marker': None,          # draw line on marker
             'marker_size': 5,       # marker size
         },
         'bar': {
             'width': 1,             # Bar Width                     float over 0
-            'colors': None,         # Bar Colors                    default following matplotlib colors    
+            'colors': __SPLUNK_BASE_COLOR_MAP['categorical_2'], # Bar Colors    default on SPLUNK color map
             'stack': True,          # Bar values Stacked            True, False
             'align': None,          # Bar align                     center, edge
         },
@@ -114,6 +179,7 @@ class drawChart:
             'y_max': None,          # Twin y max value              float
             'legend': 'upper right',# Second Legend location        default 'upper right'
             'legend_fontsize': 7,   # legend fontsize               int
+            'tight_layout': False,  # graph to graph layout margin  True, False
         },
         'pie': {
             'autopct': '%.2f%%',    # display percentage            default %.2f%%
@@ -121,10 +187,11 @@ class drawChart:
             'startangle': 0,        # Start point angle             default 0
             'shadow': False,        # Shadow On / Off               True, False
             'radius': 1,            # Pie Radius                    float
-            'colors': None,         # Pie Colors                    default following matplotlib colors    
+            'colors': __SPLUNK_BASE_COLOR_MAP['categorical_3'], # Pie Colors    default on SPLUNK color map
             'wedge_width': None,    # Pie To Donut width            float
             'wedge_edge_color': None,# Pie To Donut color           default following matplotlib colors 
-            'explode': None         # Pie piece Explode             tuple[float]     **tuple len == explode len**
+            'explode': None,        # Pie piece Explode             tuple[float]     **tuple len == explode len**
+            'arrow': False,         # Arrow option on / off         True, False
         },
     }
     
@@ -149,6 +216,9 @@ class drawChart:
         
         # index로 지정할 컬럼 유무 체크
         try:
+            if '_time' in __jsondata.columns:
+                __jsondata['_time'] = __jsondata['_time'].astype(dtype='str', errors='ignore')
+                __jsondata['_time'] = __jsondata['_time'].apply(self.transformDatetype)
             __jsondata.set_index(index if index != None else __jsondata.columns[0], inplace=True)
         except:
             print(__jsondata)
@@ -187,7 +257,7 @@ class drawChart:
         __jsondata = __jsondata.astype(dtype='int64', errors='ignore')
         
         # type object to datetime
-        # __jsondata._time = __jsondata._time.apply(self.tranform_datetype)
+        # __jsondata._time = __jsondata._time.apply(self.transform_datetype)
         
         self._data = pd.concat([self._data, __jsondata])
 
@@ -195,10 +265,10 @@ class drawChart:
     
     
     # 현재 미사용
-    # 시간 값을 년-월-일 시:분:초로 변경하는 과정
+    # 시간 값을 년-월-일 시:분:초로 변경하는 함수
     @staticmethod
-    def tranformDatetype(beforeDatetime):        
-        return datetime.fromisoformat(beforeDatetime[:-5]).strftime('%Y-%m-%d %H:%M:%S')
+    def transformDatetype(beforeDatetime):
+        return dateutil.parser.parse(beforeDatetime).strftime('%Y-%m-%d %H:%M:%S')
     
     # 빈 옵션에 Default 옵션을 지정하기 위한 함수
     def optionUpdate(self, defaultOption, overridesOption):
@@ -233,6 +303,7 @@ class drawChart:
                 ```
                 'x_axis': {
                     'label': None, # x axis label  str
+                    'fontsize': 5, # x label fontsize  default 5
                     'ticks': 45, # x label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
@@ -242,6 +313,7 @@ class drawChart:
                 ```
                 'y_axis': {
                     'label': None, # y axis label  str
+                    'fontsize': 5, # x label fontsize  default 5
                     'ticks': 0, # y label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
@@ -260,8 +332,6 @@ class drawChart:
                 ```
                 'overlay': {
                     'grid': True, # graph in grid background  True, False
-                    'axis': 0, # value axis  0 - horizental, 1 - vertical
-                    'tight_layout': False, # graph layout margin  True, False
                 }
                 ```
             line (dict):
@@ -322,7 +392,7 @@ class drawChart:
         plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Graph PNG Setting
-        plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
+        plt.savefig(__graphToBytes, format='png', dpi=general['dpi'], bbox_inches='tight')
         plt.close()
         
         # Base64 encoding
@@ -355,6 +425,7 @@ class drawChart:
                 ```
                 'x_axis': {
                     'label': None, # x axis label  str
+                    'fontsize': 5, # x label fontsize  5
                     'ticks': 45, # x label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
@@ -364,6 +435,7 @@ class drawChart:
                 ```
                 'y_axis': {
                     'label': None, # y axis label  str
+                    'fontsize': 5, # x label fontsize  5
                     'ticks': 0, # y label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
@@ -425,7 +497,7 @@ class drawChart:
         
         # print(dfGraph)
             
-        dfGraph.plot(
+        ax = dfGraph.plot(
             kind = 'bar',
             stacked= bar['stack'],
             lw= bar['width'],
@@ -435,9 +507,11 @@ class drawChart:
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
         plt.ylim((y_axis['min'], y_axis['max']))
-        plt.xlabel(x_axis['label'])
+        plt.xlabel(x_axis['label'], fontsize=x_axis['fontsize'])
         plt.ylabel(y_axis['label'])
         plt.xticks(rotation = x_axis['ticks'])
+        if len(dfGraph.index) > 10:
+            ax.set_xticks(np.arange(0, len(dfGraph.index)+1, round(len(dfGraph.index) % 10)))
         plt.yticks(rotation = y_axis['ticks'])
         plt.grid(visible=overlay['grid'])
         plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
@@ -476,6 +550,7 @@ class drawChart:
                 ```
                 'x_axis': {
                     'label': None, # x axis label  str
+                    'fontsize': 5, # x label fontsize  5
                     'ticks': 45, # x label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
@@ -485,6 +560,7 @@ class drawChart:
                 ```
                 'y_axis': {
                     'label': None, # y axis label  str
+                    'fontsize': 5, # x label fontsize  5
                     'ticks': 0, # y label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
@@ -572,7 +648,7 @@ class drawChart:
         # print(dfGraph)
         
         # Bar Graph
-        dfGraph.plot(
+        ax = dfGraph.plot(
             kind = 'bar',
             stacked= bar['stack'],
             lw= bar['width'],
@@ -587,6 +663,8 @@ class drawChart:
         plt.xlabel(x_axis['label'])
         plt.ylabel(y_axis['label'])
         plt.xticks(rotation = x_axis['ticks'])
+        if len(dfGraph.index) > 10:
+            ax.set_xticks(np.arange(0, len(dfGraph.index)+1, round(len(dfGraph.index) % 10)))
         plt.yticks(rotation = y_axis['ticks'])
         plt.legend(title='Bar', labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
@@ -608,6 +686,10 @@ class drawChart:
         plt.ylabel(twin['y_label'])
         plt.grid(visible=overlay['grid'])
         plt.legend(title='Line', labels = data.columns if legend['labels'] is None else legend['labels'], loc=twin['legend'], fontsize=twin['legend_fontsize'])
+        
+        # tight_layout
+        if twin['tight_layout']:
+            plt.tight_layout()        
         
         # Graph PNG Setting
         plt.savefig(__graphToBytes, format='png', dpi=200, bbox_inches='tight')
@@ -639,24 +721,6 @@ class drawChart:
                     'dpi': 200, # Graph Resolution  default = 200
                 }
                 ```
-            x_axis (dict): 
-                ```
-                'x_axis': {
-                    'label': None, # x axis label  str
-                    'ticks': 45, # x label text rotate degree  -90 ~ 90
-                    'min' : None, # limit low value
-                    'max' : None, # limit high value
-                }
-                ```
-            y_axis (dict):
-                ```
-                'y_axis': {
-                    'label': None, # y axis label  str
-                    'ticks': 0, # y label text rotate degree  -90 ~ 90
-                    'min' : None, # limit low value
-                    'max' : None, # limit high value
-                }
-                ```
             legend (dict): 
                 ```
                 'legend': {
@@ -686,6 +750,7 @@ class drawChart:
                     'wedge_width': 0.5, # Pie To Donut width  default 0.5  float
                     'wedge_edge_color': None, # Pie To Donut color  default following matplotlib colors 
                     'explode': None # Pie piece Explode  tuple[float]     **tuple len == explode len**
+                    'arrow': False, # Arrow option on / off  True, False
                 }
                 ```
         """
@@ -693,8 +758,6 @@ class drawChart:
         
         print(f'Option \n {updatedOption}')
         general = updatedOption['general']
-        x_axis = updatedOption['x_axis']
-        y_axis = updatedOption['y_axis']
         legend = updatedOption['legend']
         overlay = updatedOption['overlay']
         pie = updatedOption['pie']
@@ -722,25 +785,47 @@ class drawChart:
         dfGraph.loc['Total', :] = dfGraph[dfGraph.columns].sum()
         dfGraph = dfGraph.T
         
-        dfGraph['Total'].plot(
-            kind= 'pie',
-            autopct= pie['autopct'],
-            startangle= pie['startangle'],
-            explode= pie['explode'],
-            shadow= pie['shadow'],
-            radius= pie['radius'],
-            colors= pie['colors'],
-            wedgeprops=dict(width=pie['wedge_width'], edgecolor=pie['wedge_edge_color'])
-        )
+        # Arrow Between PieGraph and the Label
+        if pie['arrow']:
+            _, ax = plt.subplots(figsize=general['fig_size'], subplot_kw=dict(aspect="equal"))
+            
+            wedges, _, _ = ax.pie(
+                dfGraph['Total'].values,
+                autopct=pie['autopct'],
+                startangle=pie['startangle'],
+                explode=pie['explode'],
+                shadow=pie['shadow'],
+                colors=pie['colors'],
+                wedgeprops=dict(width=pie['wedge_width'], edgecolor=pie['wedge_edge_color']),
+                radius=pie['radius']
+            )
+            
+            # Pie piece와 Label 간 선 연결
+            for i, p in enumerate(wedges):
+                ang = (p.theta2 - p.theta1)/2. + p.theta1
+                y = np.sin(np.deg2rad(ang))
+                x = np.cos(np.deg2rad(ang))
+                horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]
+                
+                connectionstyle = f"angle,angleA=0,angleB={ang}"
+                kw = dict(arrowprops=dict(arrowstyle="-", color=pie['colors'][i], linewidth=1.5), zorder=0, va="center")
+                kw["arrowprops"].update({"connectionstyle": connectionstyle})
+                
+                ax.annotate(data.columns[i], xy=(x, y), xytext=(1.25*np.sign(x), 1.3*y),
+                            horizontalalignment=horizontalalignment, **kw)
+
+        else:
+            dfGraph['Total'].plot.pie(
+                autopct= pie['autopct'],
+                startangle= pie['startangle'],
+                explode= pie['explode'],
+                shadow= pie['shadow'],
+                radius= pie['radius'],
+                colors= pie['colors'],
+                wedgeprops=dict(width=pie['wedge_width'], edgecolor=pie['wedge_edge_color'])
+            )        
         
         plt.title(general['title'], loc='center')
-        plt.xlim((x_axis['min'], x_axis['max']))
-        plt.ylim((y_axis['min'], y_axis['max']))
-        plt.xlabel(x_axis['label'])
-        plt.ylabel(y_axis['label'])
-        plt.xticks(rotation = x_axis['ticks'])
-        plt.yticks(rotation = y_axis['ticks'])
-        plt.grid(visible=overlay['grid'])
         plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
         # Graph PNG Setting
