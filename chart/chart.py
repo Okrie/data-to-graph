@@ -132,14 +132,14 @@ class drawChart:
         },
         'x_axis': {
             'label': None,          # x axis label                  str
-            'fontsize': 5,          # x label fontsize              default 5
+            'fontsize': 12,          # x label fontsize              default 5
             'ticks': 45,            # x label text rotate degree    -90 ~ 90
             'min' : None,           # limit low value
             'max' : None,           # limit high value
         },
         'y_axis': {
             'label': None,          # y axis label                  str
-            'fontsize': 5,          # y label fontsize              default 5
+            'fontsize': 12,          # y label fontsize              default 5
             'ticks': 0,             # y label text rotate degree    -90 ~ 90
             'min' : None,           # limit low value
             'max' : None,           # limit high value
@@ -303,7 +303,7 @@ class drawChart:
                 ```
                 'x_axis': {
                     'label': None, # x axis label  str
-                    'fontsize': 5, # x label fontsize  default 5
+                    'fontsize': 12, # x label fontsize  default 12
                     'ticks': 45, # x label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
@@ -313,10 +313,16 @@ class drawChart:
                 ```
                 'y_axis': {
                     'label': None, # y axis label  str
-                    'fontsize': 5, # x label fontsize  default 5
+                    'fontsize': 12, # x label fontsize  default 12
                     'ticks': 0, # y label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
+                }
+                ```
+            overlay (dict): 
+                ```
+                'overlay': {
+                    'grid': True, # graph in grid background  True, False
                 }
                 ```
             legend (dict): 
@@ -328,18 +334,12 @@ class drawChart:
                     'fontsize': 7, # legend fontsize  int
                 }
                 ```
-            overlay (dict): 
-                ```
-                'overlay': {
-                    'grid': True, # graph in grid background  True, False
-                }
-                ```
             line (dict):
                 ```
                 'line': {
                     'width': 1, # Line Width  float over 0
                     'style': '-', # Line Style  default = '-', '--' '-.' ':'
-                    'colors': None, # Line Colors  default following matplotlib colors    
+                    'colors': __SPLUNK_BASE_COLOR_MAP['base'], # Bar Colors  default on SPLUNK color map
                     'marker': 'o', # draw line on marker           
                     'marker_size': 5, # marker size
                 }
@@ -374,7 +374,7 @@ class drawChart:
         
         print(dfGraph)
         
-        dfGraph.plot(
+        ax = dfGraph.plot(
             marker= line['marker'],
             markersize= line['marker_size'],
             lw= line['width'],
@@ -384,11 +384,17 @@ class drawChart:
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
         plt.ylim((y_axis['min'], y_axis['max']))
-        plt.xlabel(x_axis['label'])
-        plt.ylabel(y_axis['label'])
+        plt.xlabel(x_axis['label'], fontsize=x_axis['fontsize'])
+        plt.ylabel(y_axis['label'], fontsize=y_axis['fontsize'])
         plt.xticks(rotation = x_axis['ticks'])
+        # 표현해야 될 데이터 많을 시 x 축 값 정리
+        if len(dfGraph.index) > 10:
+            ax.set_xticks(np.arange(0, len(dfGraph.index)+1, round(len(dfGraph.index) % 10)))
+            
         plt.yticks(rotation = y_axis['ticks'])
         plt.grid(visible=overlay['grid'])
+        
+        # legend on/off
         if overlay['legend']:
             plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
@@ -426,7 +432,7 @@ class drawChart:
                 ```
                 'x_axis': {
                     'label': None, # x axis label  str
-                    'fontsize': 5, # x label fontsize  5
+                    'fontsize': 12, # x label fontsize  12
                     'ticks': 45, # x label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
@@ -436,10 +442,17 @@ class drawChart:
                 ```
                 'y_axis': {
                     'label': None, # y axis label  str
-                    'fontsize': 5, # x label fontsize  5
+                    'fontsize': 12, # x label fontsize  12
                     'ticks': 0, # y label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
+                }
+                ```
+            overlay (dict): 
+                ```
+                'overlay': {
+                    'grid': True, # graph in grid background  True, False
+                    'legend': True, # graph on legend On / Off  True, False
                 }
                 ```
             legend (dict): 
@@ -451,19 +464,11 @@ class drawChart:
                     'fontsize': 7, # legend fontsize  int
                 }
                 ```
-            overlay (dict): 
-                ```
-                'overlay': {
-                    'grid': True, # graph in grid background  True, False
-                    'axis': 0, # value axis  0 - horizental, 1 - vertical
-                    'tight_layout': False, # graph layout margin  True, False
-                }
-                ```
             bar (dict):
                 ```
                 'bar': {
                     'width': 1, # Bar Width  float over 0
-                    'colors': None, # Bar Colors  default following matplotlib colors    
+                    'colors': __SPLUNK_BASE_COLOR_MAP['categorical_2'], # Bar Colors  default on SPLUNK color map
                     'stack': True, # Bar values Stacked  True, False
                     'align': None, # Bar align  center, edge
                 }
@@ -511,10 +516,14 @@ class drawChart:
         plt.xlabel(x_axis['label'], fontsize=x_axis['fontsize'])
         plt.ylabel(y_axis['label'])
         plt.xticks(rotation = x_axis['ticks'])
+        # 표현해야 될 데이터 많을 시 x 축 값 정리
         if len(dfGraph.index) > 10:
             ax.set_xticks(np.arange(0, len(dfGraph.index)+1, round(len(dfGraph.index) % 10)))
+            
         plt.yticks(rotation = y_axis['ticks'])
         plt.grid(visible=overlay['grid'])
+        
+        # legend on/off
         if overlay['legend']:
             plt.legend(title= legend['title'], labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
@@ -552,7 +561,7 @@ class drawChart:
                 ```
                 'x_axis': {
                     'label': None, # x axis label  str
-                    'fontsize': 5, # x label fontsize  5
+                    'fontsize': 12, # x label fontsize  12
                     'ticks': 45, # x label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
@@ -562,10 +571,17 @@ class drawChart:
                 ```
                 'y_axis': {
                     'label': None, # y axis label  str
-                    'fontsize': 5, # x label fontsize  5
+                    'fontsize': 12, # x label fontsize  12
                     'ticks': 0, # y label text rotate degree  -90 ~ 90
                     'min' : None, # limit low value
                     'max' : None, # limit high value
+                }
+                ```
+            overlay (dict): 
+                ```
+                'overlay': {
+                    'grid': True, # graph in grid background  True, False
+                    'legend': True, # graph on legend On / Off  True, False
                 }
                 ```
             legend (dict): 
@@ -575,14 +591,6 @@ class drawChart:
                     'labels': None, # legend label  columns
                     'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
                     'fontsize': 7, # legend fontsize  int
-                }
-                ```
-            overlay (dict): 
-                ```
-                'overlay': {
-                    'grid': True, # graph in grid background  True, False
-                    'axis': 0, # value axis  0 - horizental, 1 - vertical
-                    'tight_layout': False, # graph layout margin  True, False
                 }
                 ```
             line (dict):
@@ -616,6 +624,7 @@ class drawChart:
                     'y_max': None, # Twin y max value  float
                     'legend': 'upper right', # Second Legend location  default 'upper right'
                     'legend_fontsize': 7, # legend fontsize  int
+                    'tight_layout': False, # graph layout margin  True, False
                 }
         """
         updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
@@ -664,10 +673,14 @@ class drawChart:
         plt.ylim((y_axis['min'], y_axis['max']))
         plt.xlabel(x_axis['label'])
         plt.ylabel(y_axis['label'])
-        plt.xticks(rotation = x_axis['ticks'])
+        plt.xticks(rotation = x_axis['ticks'])        
+        # 표현해야 될 데이터 많을 시 x 축 값 정리
         if len(dfGraph.index) > 10:
             ax.set_xticks(np.arange(0, len(dfGraph.index)+1, round(len(dfGraph.index) % 10)))
+        
         plt.yticks(rotation = y_axis['ticks'])
+        
+        # legend on/off
         if overlay['legend']:
             plt.legend(title='Bar', labels = data.columns if legend['labels'] is None else legend['labels'], loc=legend['location'], fontsize=legend['fontsize'])
         
@@ -688,6 +701,8 @@ class drawChart:
         plt.xlabel(twin['x_label'])
         plt.ylabel(twin['y_label'])
         plt.grid(visible=overlay['grid'])
+        
+        # legend on / off
         if overlay['legend']:
             plt.legend(title='Line', labels = data.columns if legend['labels'] is None else legend['labels'], loc=twin['legend'], fontsize=twin['legend_fontsize'])
         
@@ -725,6 +740,13 @@ class drawChart:
                     'dpi': 200, # Graph Resolution  default = 200
                 }
                 ```
+            overlay (dict): 
+                ```
+                'overlay': {
+                    'grid': True, # graph in grid background  True, False
+                    'legend': True, # graph on legend On / Off  True, False
+                }
+                ```
             legend (dict): 
                 ```
                 'legend': {
@@ -732,14 +754,6 @@ class drawChart:
                     'labels': None, # legend label  columns
                     'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
                     'fontsize': 7, # legend fontsize  int
-                }
-                ```
-            overlay (dict): 
-                ```
-                'overlay': {
-                    'grid': True, # graph in grid background  True, False
-                    'axis': 0, # value axis  0 - horizental, 1 - vertical
-                    'tight_layout': False, # graph layout margin  True, False
                 }
                 ```
             pie (dict):
