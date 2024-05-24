@@ -24,7 +24,7 @@ async def home(request: Request):
     
     graph = drawChart()
     # RestApi를 통해 json 을 받는 다는 가정으로 해당에 맞게 데이터 정제
-    jsondata = open(f"{os.path.realpath('.')}/static/data/1715043362_19.json", 'rb').read().decode('utf-8').replace('\\', '')
+    jsondata = open(f"{os.path.realpath('.')}/static/data/test.json", 'rb').read().decode('utf-8').replace('\\', '')
     jsondata = json.dumps(jsondata)
     # jsondataList = jsondata.split('\n')[:-1]
     
