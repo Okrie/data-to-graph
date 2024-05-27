@@ -12,27 +12,28 @@ import numpy as np
 from io import BytesIO, StringIO
 
 
+# 현재 불러 오지 못하는 문제가 있어 보류
 # 한글 폰트 문제 해결 
 # matplotlib은 한글 폰트를 지원하지 않음
 # os정보
-import platform
+# import platform
 
-# font_manager : 폰트 관리 모듈
-# rc : 폰트 변경 모듈
-from matplotlib import font_manager, rc
-font_manager.fontManager
-# unicode 설정
-plt.rcParams['axes.unicode_minus'] = False
+# # font_manager : 폰트 관리 모듈
+# # rc : 폰트 변경 모듈
+# from matplotlib import font_manager, rc
+# font_manager.fontManager
+# # unicode 설정
+# plt.rcParams['axes.unicode_minus'] = False
 
-if platform.system() == 'Darwin': # macos
-    rc('font', family='AppleGothic')
-elif platform.system() == 'Windows': # windows
-    path = 'c:/Windows/Fonts/malgun.ttf'
-    font_name = font_manager.FontProperties(fname=path).get_name()
-    rc('font', family=font_name)
-else:
-    print("Unknown System")
-    plt.rc('font', family='Nanum Gothic')
+# if platform.system() == 'Darwin': # macos
+#     rc('font', family='AppleGothic')
+# elif platform.system() == 'Windows': # windows
+#     path = 'c:/Windows/Fonts/malgun.ttf'
+#     font_name = font_manager.FontProperties(fname=path).get_name()
+#     rc('font', family=font_name)
+# else:
+#     print("Unknown System")
+#     plt.rc('font', family='Nanum Gothic')
 ### Graph 한글 깨짐 현상 해결 끝 ###
 
 
@@ -51,6 +52,12 @@ class drawChart:
         ### Returns:
             - Web에서 사용하기 위한 Graph PNG를 Base64로 인코딩해 Return
     """
+    
+    _data: list = []
+    # _data: pd.DataFrame = None
+    _len: int = 0
+    
+    
     __SPLUNK_BASE_COLOR_MAP = {
         'base': [
             '#7B5547',
@@ -101,9 +108,6 @@ class drawChart:
             '#184B81'
         ]
     }
-    _data: list = []
-    # _data: pd.DataFrame = None
-    _len: int = 0
     
     # OPTIONS
     DEFAULT_OPTION: dict = {
@@ -112,12 +116,12 @@ class drawChart:
             'graph_style': 'ggplot',    # graph view style
             
             ## GRAPH SIZE
-            'fig_size': (12, 5),    # graph size        tuple
+            'fig_size': (5, 2),    # graph size        tuple
             
             ## GRAPH View Settings
             ### GRAPH TEXT
             'title': None,          # graph title                   str
-            'label': None,#_data.keys() if _data != None else None, # legend label                  list | series
+            'label': None,          # legend label                  list | series
             
             # Flip x - y
             'flip': False,          # Flip X-Y axis                 True, False
@@ -128,18 +132,21 @@ class drawChart:
             'drop_column_axis': 1,  # Drop Column Axis              0 - horizental, 1 - vertical
             
             # Graph resolution
-            'dpi': 200,             # Graph Resolution              default = 200
+            'dpi': 150,             # Graph Resolution              default = 100
+            'img_width': 700        # Image px                      default = 700
         },
         'x_axis': {
             'label': None,          # x axis label                  str
-            'fontsize': 12,          # x label fontsize              default 5
+            'labelsize': 12,        # x label fontsize              default 5
+            'fontsize': 7,         # x label fontsize              default 5
             'ticks': 45,            # x label text rotate degree    -90 ~ 90
             'min' : None,           # limit low value
             'max' : None,           # limit high value
         },
         'y_axis': {
             'label': None,          # y axis label                  str
-            'fontsize': 12,          # y label fontsize              default 5
+            'labelsize': 12,        # x label fontsize              default 5
+            'fontsize': 5,         # y label fontsize              default 5
             'ticks': 0,             # y label text rotate degree    -90 ~ 90
             'min' : None,           # limit low value
             'max' : None,           # limit high value
@@ -153,7 +160,7 @@ class drawChart:
             'title': None,          # legend title                  str
             'labels': None,         # legend label                  columns
             'location': 'best',     # legend location               best, left, center, right, upper [left, center, right], lower [left, center, right]
-            'fontsize': 7,          # legend fontsize               int
+            'fontsize': 5,          # legend fontsize               int
         },
         'line': {
             'width': 1,             # Line Width                    float over 0
@@ -197,6 +204,7 @@ class drawChart:
     
     def __init__(self):
         # print(self._data)
+        self._data = []
         pass
     
     # pandas 제거로 사용 하지 않음
@@ -298,11 +306,14 @@ class drawChart:
     
     # 빈 옵션에 Default 옵션을 지정하기 위한 함수
     def optionUpdate(self, defaultOption, overridesOption):
-        for k, v in overridesOption.items():
-            if isinstance(v, dict) and k in defaultOption:
-                defaultOption[k] = self.optionUpdate(defaultOption.get(k, {}), v)
-            else:
-                defaultOption[k] = v
+        if overridesOption != None:
+            for k, v in overridesOption.items():
+                if isinstance(v, dict) and k in defaultOption:
+                    defaultOption[k] = self.optionUpdate(defaultOption.get(k, {}), v)
+                else:
+                    defaultOption[k] = v
+        else:
+            return self.DEFAULT_OPTION
         return defaultOption
     
     # 05.17 그래프 분리
@@ -372,7 +383,7 @@ class drawChart:
                 ```
         """
         updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
-        
+
         # print(f'Option \n {updatedOption}')
         general = updatedOption['general']
         x_axis = updatedOption['x_axis']
@@ -394,6 +405,7 @@ class drawChart:
                 for item in data:
                     if col in item:
                         del item[col]
+
         # if general['drop_columns']:
         #     data.drop(general['drop_columns_name'], axis=general['drop_column_axis'], inplace=True)
         #     print(f"Deleted Column : {general['drop_columns']}\n{data}")
@@ -409,6 +421,7 @@ class drawChart:
         # for item in data:
         #     print(item, '\n')
             
+            
         x = []
         y = []
         label_x = []
@@ -422,6 +435,7 @@ class drawChart:
             for _ in range(len(item)):
                 x.append(self.transformDatetype(item[label_x[0]]))
                 y.append(int(item[label_x[1]]))
+        
         print(f"x = {x}")
         print(f"y = {y}")
         print(f"Label = {label_x}")
@@ -434,6 +448,7 @@ class drawChart:
             lw= line['width'],
             # color=line['colors']
         )
+        
         # ax = plt.plot(
         #     times,
         #     log_levels,
@@ -448,14 +463,15 @@ class drawChart:
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
         plt.ylim((y_axis['min'], y_axis['max']))
-        plt.xlabel(x_axis['label'], fontsize=x_axis['fontsize'])
-        plt.ylabel(y_axis['label'], fontsize=y_axis['fontsize'])
-        plt.xticks(rotation = x_axis['ticks'])
-        # 표현해야 될 데이터 많을 시 x 축 값 정리
-        if len(dfGraph.keys()) > 10:
-            ax.set_xticks(np.arange(0, len(dfGraph.keys())+1, round(len(dfGraph.keys()) % 10)))
+        plt.xlabel(x_axis['label'], fontsize=x_axis['labelsize'])
+        plt.ylabel(y_axis['label'], fontsize=y_axis['labelsize'])
+        plt.xticks(rotation = x_axis['ticks'], fontsize=x_axis['fontsize'])
+        # print(len(label_x))
+        # # 표현해야 될 데이터 많을 시 x 축 값 정리
+        # if len(x) > 10:
+        #     ax.set_xticks(np.arange(0, len(x)+1, round(len(label_x) % 10)))
             
-        plt.yticks(rotation = y_axis['ticks'])
+        plt.yticks(rotation = y_axis['ticks'], fontsize=y_axis['fontsize'])
         plt.grid(visible=overlay['grid'])
         
         # legend on/off
@@ -469,11 +485,11 @@ class drawChart:
         # Base64 encoding
         import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64
+        return "data:image/png;base64,%s" % __convBase64 + f" width={general['img_width']}px"
     
     
     # 05.20 그래프 분리
-    # # Bar Graph
+    # Bar Graph
     # def bar(self, option = dict):
     #     """## Bar Graph
 

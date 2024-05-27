@@ -41,7 +41,6 @@ async def home(request: Request):
     linechart = graph.line({
         'general' : {
             'graph_style': 'ggplot',
-            'fig_size': (20, 5),
             'title': 'Status Day',
             'flip': False,
             # 'drop_columns': True,
