@@ -157,7 +157,7 @@ class drawChart:
         'legend': {
             'title': None,          # legend title                  str
             'labels': None,         # legend label                  columns
-            'location': 'best',     # legend location               best, left, center, right, upper [left, center, right], lower [left, center, right]
+            'location': 'upper left',     # legend location               best, left, center, right, upper [left, center, right], lower [left, center, right]
             'fontsize': 5,          # legend fontsize               int
         },
         'line': {
@@ -182,7 +182,7 @@ class drawChart:
             'x_max': None,          # Twin x max value              float
             'y_min': None,          # Twin y min value              float
             'y_max': None,          # Twin y max value              float
-            'legend': 'upper left',# Second Legend location        default 'upper left'
+            'legend': 'upper right',# Second Legend location        default 'upper left'
             'legend_fontsize': 7,   # legend fontsize               int
             'tight_layout': False,  # graph to graph layout margin  True, False
         },
@@ -196,7 +196,7 @@ class drawChart:
             'wedge_width': None,    # Pie To Donut width            float
             'wedge_edge_color': None,# Pie To Donut color           default following matplotlib colors 
             'explode': None,        # Pie piece Explode             tuple[float]     **tuple len == explode len**
-            'arrow': False,         # Arrow option on / off         True, False
+            'arrow': True,         # Arrow option on / off         True, False
         },
     }
     
