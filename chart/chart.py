@@ -341,7 +341,7 @@ class drawChart:
 
         # Draw Graph
         dfGraph = {key: [d[key] for d in data if key in d] for key in data[0].keys()}
-        fig, ax = plt.subplots(figsize=general['fig_size'])
+        _, ax = plt.subplots(figsize=general['fig_size'])
         
         # Graph legend label
         label_x = list(dfGraph.keys())
@@ -386,7 +386,7 @@ class drawChart:
         # Base64 encoding
         import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64 + f" width={general['img_width']}px"
+        return "data:image/png;base64,%s" % __convBase64 + f'" width="{general["img_width"]}px"'
     
     
     # 05.20 그래프 분리
@@ -485,7 +485,7 @@ class drawChart:
 
         # Draw Graph
         dfGraph = {key: [d[key] for d in data if key in d] for key in data[0].keys()}
-        fig, ax = plt.subplots(figsize=general['fig_size'])
+        _, ax = plt.subplots(figsize=general['fig_size'])
         
         # Graph legend label
         label_x = list(dfGraph.keys())
@@ -536,7 +536,7 @@ class drawChart:
         # Base64 encoding
         import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64 + f" width={general['img_width']}px"
+        return "data:image/png;base64,%s" % __convBase64 + f'" width="{general["img_width"]}px"'
     
     
     # # 05.20 그래프 분리
@@ -661,7 +661,7 @@ class drawChart:
 
         # Draw Graph
         dfGraph = {key: [d[key] for d in data if key in d] for key in data[0].keys()}
-        fig, axBar = plt.subplots(figsize=general['fig_size'])
+        _, axBar = plt.subplots(figsize=general['fig_size'])
 
         # Graph legend label
         label_x = list(dfGraph.keys())
@@ -742,7 +742,7 @@ class drawChart:
         # Base64 encoding
         import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64 + f" width={general['img_width']}px"
+        return "data:image/png;base64,%s" % __convBase64 + f'" width="{general["img_width"]}px"'
     
     
     # 05.20 그래프 분리
@@ -823,7 +823,7 @@ class drawChart:
 
         # Draw Graph
         dfGraph = {key: [d[key] for d in data if key in d] for key in data[0].keys()}
-        fig, ax = plt.subplots(figsize=general['fig_size'])
+        _, ax = plt.subplots(figsize=general['fig_size'])
         
         # Graph legend label
         label_x = list(dfGraph.keys())
@@ -885,4 +885,4 @@ class drawChart:
         # Base64 encoding
         import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64 + f" width={general['img_width']}px"
+        return "data:image/png;base64,%s" % __convBase64 + f'" width="{general["img_width"]}px"'
