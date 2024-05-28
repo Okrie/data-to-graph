@@ -8,31 +8,8 @@ import matplotlib.pyplot as plt
 import dateutil.parser
 import numpy as np
 from io import BytesIO
-
-
-# 현재 불러 오지 못하는 문제가 있어 보류
-# 한글 폰트 문제 해결 
-# matplotlib은 한글 폰트를 지원하지 않음
-# os정보
-# import platform
-
-# # font_manager : 폰트 관리 모듈
-# # rc : 폰트 변경 모듈
-# from matplotlib import font_manager, rc
-# font_manager.fontManager
-# # unicode 설정
-# plt.rcParams['axes.unicode_minus'] = False
-
-# if platform.system() == 'Darwin': # macos
-#     rc('font', family='AppleGothic')
-# elif platform.system() == 'Windows': # windows
-#     path = 'c:/Windows/Fonts/malgun.ttf'
-#     font_name = font_manager.FontProperties(fname=path).get_name()
-#     rc('font', family=font_name)
-# else:
-#     print("Unknown System")
-#     plt.rc('font', family='Nanum Gothic')
-### Graph 한글 깨짐 현상 해결 끝 ###
+plt.rcParams['axes.unicode_minus'] = False
+plt.rc('font', family='Nanum Gothic')
 
 
 class drawChart:
