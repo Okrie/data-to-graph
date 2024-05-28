@@ -386,7 +386,7 @@ class drawChart:
         # Base64 encoding
         import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64 + f'" width="{general['img_width']}px"'
+        return f'data:image/png;base64,{__convBase64}" width="{general["img_width"]}px"'
     
     
     # 05.20 그래프 분리
@@ -536,7 +536,7 @@ class drawChart:
         # Base64 encoding
         import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64 + f'" width="{general['img_width']}px"'
+        return f'data:image/png;base64,{__convBase64}" width="{general["img_width"]}px"'
     
     
     # # 05.20 그래프 분리
@@ -742,7 +742,7 @@ class drawChart:
         # Base64 encoding
         import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64 + f'" width="{general['img_width']}px"'
+        return f'data:image/png;base64,{__convBase64}" width="{general["img_width"]}px"'
     
     
     # 05.20 그래프 분리
@@ -885,4 +885,4 @@ class drawChart:
         # Base64 encoding
         import base64
         __convBase64 = base64.b64encode(__graphToBytes.getvalue()).decode("utf-8").replace("\n", "")
-        return "data:image/png;base64,%s" % __convBase64 + f'" width="{general['img_width']}px"'
+        return f'data:image/png;base64,{__convBase64}" width="{general["img_width"]}px"'
