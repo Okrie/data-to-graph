@@ -158,7 +158,7 @@ class drawChart:
             'title': None,          # legend title                  str
             'labels': None,         # legend label                  columns
             'location': 'best',     # legend location               best, left, center, right, upper [left, center, right], lower [left, center, right]
-            'fontsize': 5,          # legend fontsize               int
+            'fontsize': 3,          # legend fontsize               int
         },
         'line': {
             'width': 1,             # Line Width                    float over 0
@@ -350,16 +350,16 @@ class drawChart:
         x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
         x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
         
-        for i in range(1, len(x)):
+        for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i]]]
+            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             ax.plot(
                 x_data,
                 y_data,
                 marker= line['marker'],
                 markersize= line['marker_size'],
                 lw= line['width'],
-                color=line['colors'][i-1]
+                color=line['colors'][i % len(line['colors'])]
             )
         
         plt.title(general['title'], loc='center')
@@ -496,14 +496,14 @@ class drawChart:
         
         bottom= [0 for _ in range(len(x))]
         
-        for i in range(1, len(x)):
+        for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i]]]
+            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             ax.bar(
                 x_data,
                 y_data,
                 lw= bar['width'],
-                color= bar['colors'][i-1],
+                color= bar['colors'][i % len(bar['colors'])],
                 align= bar['align'],
                 bottom= bottom
             )
@@ -673,14 +673,14 @@ class drawChart:
         bottom= [0 for _ in range(len(x))]
         
         # Bar Graph
-        for i in range(1, len(x)):
+        for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i]]]
+            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             axBar.bar(
                 x_data,
                 y_data,
                 lw= bar['width'],
-                color= bar['colors'][i-1],
+                color= bar['colors'][i % len(bar['colors'])],
                 align= bar['align'],
                 bottom= bottom
             )
@@ -709,16 +709,16 @@ class drawChart:
         axLine = axBar.twinx() if twin['twin'] == 'x' else axBar.twiny()
         
         # Line Graph
-        for i in range(1, len(x)):
+        for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i]]]
+            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             axLine.plot(
                 x_data,
                 y_data,
                 marker= line['marker'],
                 markersize= line['marker_size'],
                 lw= line['width'],
-                color=line['colors'][i-1],
+                color=line['colors'][i % len(line['colors'])],
             )
         
         plt.xlim((twin['x_min'], twin['x_max']))
