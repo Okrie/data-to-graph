@@ -333,7 +333,7 @@ class drawChart:
         try:
             x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
-        finally:
+        except:
             x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [x for x in dfGraph[label_x[0]]]
 
@@ -447,7 +447,6 @@ class drawChart:
         """
         updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
         
-        print(f'Option \n {updatedOption}')
         general = updatedOption['general']
         x_axis = updatedOption['x_axis']
         y_axis = updatedOption['y_axis']
@@ -481,7 +480,7 @@ class drawChart:
         try:
             x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
-        finally:
+        except:
             x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [x for x in dfGraph[label_x[0]]]
         
@@ -625,7 +624,6 @@ class drawChart:
         """
         updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
         
-        print(f'Option \n {updatedOption}')
         general = updatedOption['general']
         x_axis = updatedOption['x_axis']
         y_axis = updatedOption['y_axis']
@@ -661,7 +659,7 @@ class drawChart:
         try:
             x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
-        finally:
+        except:
             x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [x for x in dfGraph[label_x[0]]]
             
@@ -795,7 +793,6 @@ class drawChart:
         """
         updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
         
-        print(f'Option \n {updatedOption}')
         general = updatedOption['general']
         legend = updatedOption['legend']
         overlay = updatedOption['overlay']
