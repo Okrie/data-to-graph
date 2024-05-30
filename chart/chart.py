@@ -330,14 +330,18 @@ class drawChart:
         label_x = list(dfGraph.keys())
         
         # x datas
-        x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
-        x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
-        
+        try:
+            x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
+        finally:
+            x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [x for x in dfGraph[label_x[0]]]
+
         for i in range(1, len(label_x)):
             # y axis data
             y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             ax.plot(
-                x_data,
+                x_data if (x_data != [None]) and (x_data != None) else label_x[0],
                 y_data,
                 marker= line['marker'],
                 markersize= line['marker_size'],
@@ -474,8 +478,12 @@ class drawChart:
         label_x = list(dfGraph.keys())
         
         # x datas
-        x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
-        x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
+        try:
+            x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
+        finally:
+            x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [x for x in dfGraph[label_x[0]]]
         
         bottom= [0 for _ in range(len(x))]
         
@@ -483,7 +491,7 @@ class drawChart:
             # y axis data
             y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             ax.bar(
-                x_data,
+                x_data if (x_data != [None]) and (x_data != None) else label_x[0],
                 y_data,
                 lw= bar['width'],
                 color= bar['colors'][i % len(bar['colors'])],
@@ -650,9 +658,13 @@ class drawChart:
         label_x = list(dfGraph.keys())
         
         # x datas
-        x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
-        x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
-        
+        try:
+            x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
+        finally:
+            x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [x for x in dfGraph[label_x[0]]]
+            
         bottom= [0 for _ in range(len(x))]
         
         # Bar Graph
@@ -660,7 +672,7 @@ class drawChart:
             # y axis data
             y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             axBar.bar(
-                x_data,
+                x_data if (x_data != [None]) and (x_data != None) else label_x[0],
                 y_data,
                 lw= bar['width'],
                 color= bar['colors'][i % len(bar['colors'])],
