@@ -10,13 +10,15 @@ import numpy as np
 from io import BytesIO
 
 # 한글 폰트 설정
-import matplotlib.font_manager as fm
-plt.rcParams['axes.unicode_minus'] = False
-fe = fm.FontEntry(fname=r'/usr/share/fonts/truetype/nanum/NanumGothic.ttf', name='NanumGothic')
-fm.fontManager.ttflist.insert(0, fe)
-plt.rcParams.update({'font.size': 10, 'font.family': 'NanumGothic'})
+# import matplotlib.font_manager as fm
+# plt.rcParams['axes.unicode_minus'] = False
+# fe = fm.FontEntry(fname=r'/usr/share/fonts/truetype/nanum/NanumGothic.ttf', name='NanumGothic')
+# fm.fontManager.ttflist.insert(0, fe)
+# plt.rcParams.update({'font.size': 10, 'font.family': 'NanumGothic'})
 # 한글 폰트 설정 끝
 
+# prevent scientific notation
+plt.ticklabel_format(style='plain', axis='y')
 
 class drawChart:
     """
@@ -114,7 +116,10 @@ class drawChart:
             
             # Graph resolution
             'dpi': 150,             # Graph Resolution              default = 150
-            'img_width': 700        # Image px                      default = 700
+            'img_width': 700,       # Image px                      default = 700
+            
+            # View Max Value Text
+            'value_text': True,
         },
         'x_axis': {
             'label': None,          # x axis label                  str
@@ -152,7 +157,7 @@ class drawChart:
             'marker_size': 5,       # marker size
         },
         'bar': {
-            'width': 1,             # Bar Width                     float over 0
+            'width': 0.8,             # Bar Width                     float over 0
             'colors': __SPLUNK_BASE_COLOR_MAP['categorical_2'], # Bar Colors    default on SPLUNK color map
             'stack': True,          # Bar values Stacked            True, False
             'align': 'center',          # Bar align                     center, edge
@@ -161,9 +166,9 @@ class drawChart:
             'twin': 'x',            # Twin Axis                     default x  y
             'x_label': '',          # Twin x label                  str
             'y_label': '',          # Twin y label                  str
-            'x_min': None,          # Twin x min value              float
+            'x_min': 0,          # Twin x min value              float
             'x_max': None,          # Twin x max value              float
-            'y_min': None,          # Twin y min value              float
+            'y_min': 0,          # Twin y min value              float
             'y_max': None,          # Twin y max value              float
             'legend': 'upper right',# Second Legend location        default 'upper left'
             'legend_fontsize': 7,   # legend fontsize               int
@@ -188,7 +193,7 @@ class drawChart:
         pass
     
     # 받은 데이터가 한개, 한개 이상일 때로 구분하여 dict(key: value(list)) 형태로 변경
-    def seperateJSONResult_json(self, originJsonData = None, index: str = None):
+    def seperateJSONResult_json(self, originJsonData = None):
         result_data = originJsonData
         
         if isinstance(result_data, dict):
@@ -205,10 +210,18 @@ class drawChart:
         return json_data
 
     # Graph를 그리기 위한 Data 정제 과정
-    def loadJsonDataToDict(self, jsondata: dict = None, index: str = None):
-        json_data = self.seperateJSONResult_json(jsondata, index)
+    def loadJsonDataToDict(self, jsondata: dict = None, delReservedWord: bool = True):
+        json_data = self.seperateJSONResult_json(jsondata)
         
         self._data.extend(json_data)
+
+        # 예약어 삭제 '_span', '_spandays'
+        if delReservedWord:
+            columns = ['_span', '_spandays']
+            for col in columns:
+                for item in self._data:
+                    if col in item:
+                        del item[col]
 
         return self._data
     
@@ -326,6 +339,9 @@ class drawChart:
         dfGraph = {key: [d[key] for d in data if key in d] for key in data[0].keys()}
         _, ax = plt.subplots(figsize=general['fig_size'])
         
+        # prevent scientific notation
+        plt.ticklabel_format(style='plain', axis='y')
+        
         # Graph legend label
         label_x = list(dfGraph.keys())
         
@@ -333,13 +349,13 @@ class drawChart:
         try:
             x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
-        except:
+        except TypeError:
             x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [x for x in dfGraph[label_x[0]]]
 
         for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
+            y_data = [float(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             ax.plot(
                 x_data if (x_data != [None]) and (x_data != None) else label_x[0],
                 y_data,
@@ -348,6 +364,12 @@ class drawChart:
                 lw= line['width'],
                 color=line['colors'][i % len(line['colors'])]
             )
+            
+            # View Max Value Text
+            if general['value_text']:
+                max_y = np.max(y_data)
+                max_x = y_data.index(max_y)
+                ax.text(max_x-0.25, max_y, f'{max_y}', ha='left', va='top')
         
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
@@ -473,6 +495,9 @@ class drawChart:
         dfGraph = {key: [d[key] for d in data if key in d] for key in data[0].keys()}
         _, ax = plt.subplots(figsize=general['fig_size'])
         
+        # prevent scientific notation
+        plt.ticklabel_format(style='plain', axis='y')
+        
         # Graph legend label
         label_x = list(dfGraph.keys())
         
@@ -480,7 +505,7 @@ class drawChart:
         try:
             x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
-        except:
+        except TypeError:
             x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [x for x in dfGraph[label_x[0]]]
         
@@ -488,7 +513,7 @@ class drawChart:
         
         for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
+            y_data = [float(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             ax.bar(
                 x_data if (x_data != [None]) and (x_data != None) else label_x[0],
                 y_data,
@@ -499,8 +524,22 @@ class drawChart:
             )
             if bar['stack']:
                 bottom = [ before + after for before, after in zip(bottom, y_data)]
+                print(bottom)
+                print(y_data)
+                # View Max Value Text
+                if general['value_text']:
+                    max_y = np.max(bottom)
+                    max_x = bottom.index(max_y)
+                    ax.text(max_x-0.25, max_y, f'{max_y}', ha='left', va='top')
             else:
                 bottom = 0
+                
+                # View Max Value Text
+                if general['value_text']:
+                    max_y = np.max(y_data)
+                    max_x = y_data.index(max_y)
+                    ax.text(max_x-0.25, max_y, f'{max_y}', ha='left', va='top')
+            
             
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
@@ -651,6 +690,9 @@ class drawChart:
         # Draw Graph
         dfGraph = {key: [d[key] for d in data if key in d] for key in data[0].keys()}
         _, axBar = plt.subplots(figsize=general['fig_size'])
+        
+        # prevent scientific notation
+        plt.ticklabel_format(style='plain', axis='y')
 
         # Graph legend label
         label_x = list(dfGraph.keys())
@@ -659,7 +701,7 @@ class drawChart:
         try:
             x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
-        except:
+        except TypeError:
             x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
             x_data = [x for x in dfGraph[label_x[0]]]
             
@@ -668,7 +710,7 @@ class drawChart:
         # Bar Graph
         for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
+            y_data = [float(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             axBar.bar(
                 x_data if (x_data != [None]) and (x_data != None) else label_x[0],
                 y_data,
@@ -679,8 +721,20 @@ class drawChart:
             )
             if bar['stack']:
                 bottom = [ before + after for before, after in zip(bottom, y_data)]
+                
+                # View Max Value Text
+                if general['value_text']:
+                    max_y = np.max(bottom)
+                    max_x = bottom.index(max_y)
+                    axBar.text(max_x-0.25, max_y, f'{max_y}', ha='left', va='top')
             else:
                 bottom = 0
+                
+                # View Max Value Text
+                if general['value_text']:
+                    max_y = np.max(y_data)
+                    max_x = y_data.index(max_y)
+                    axBar.text(max_x-0.25, max_y, f'{max_y}', ha='left', va='top')
         
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
@@ -701,10 +755,13 @@ class drawChart:
         # Twinx | Twiny
         axLine = axBar.twinx() if twin['twin'] == 'x' else axBar.twiny()
         
+        # prevent scientific notation
+        plt.ticklabel_format(style='plain', axis='y')
+        
         # Line Graph
         for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
+            y_data = [float(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             axLine.plot(
                 x_data,
                 y_data,
@@ -713,6 +770,12 @@ class drawChart:
                 lw= line['width'],
                 color=line['colors'][i % len(line['colors'])],
             )
+            
+            # View Max Value Text
+            if general['value_text']:
+                max_y = np.max(y_data)
+                max_x = y_data.index(max_y)
+                axLine.text(max_x, max_y, f'{max_y}', ha='left', va='top')
         
         plt.xlim((twin['x_min'], twin['x_max']))
         plt.ylim((twin['y_min'], twin['y_max']))
