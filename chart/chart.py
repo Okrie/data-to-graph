@@ -10,11 +10,11 @@ import numpy as np
 from io import BytesIO
 
 # 한글 폰트 설정
-# import matplotlib.font_manager as fm
-# plt.rcParams['axes.unicode_minus'] = False
-# fe = fm.FontEntry(fname=r'/usr/share/fonts/truetype/nanum/NanumGothic.ttf', name='NanumGothic')
-# fm.fontManager.ttflist.insert(0, fe)
-# plt.rcParams.update({'font.size': 10, 'font.family': 'NanumGothic'})
+import matplotlib.font_manager as fm
+plt.rcParams['axes.unicode_minus'] = False
+fe = fm.FontEntry(fname=r'/usr/share/fonts/truetype/nanum/NanumGothic.ttf', name='NanumGothic')
+fm.fontManager.ttflist.insert(0, fe)
+plt.rcParams.update({'font.size': 10, 'font.family': 'NanumGothic'})
 # 한글 폰트 설정 끝
 
 # prevent scientific notation
