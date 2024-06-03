@@ -524,8 +524,7 @@ class drawChart:
             )
             if bar['stack']:
                 bottom = [ before + after for before, after in zip(bottom, y_data)]
-                print(bottom)
-                print(y_data)
+
                 # View Max Value Text
                 if general['value_text']:
                     max_y = np.max(bottom)
