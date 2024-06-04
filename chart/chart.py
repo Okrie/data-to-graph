@@ -115,11 +115,11 @@ class drawChart:
             'drop_column_axis': 1,  # Drop Column Axis              0 - horizental, 1 - vertical
             
             # Graph resolution
-            'dpi': 150,             # Graph Resolution              default = 150
-            'img_width': 700,       # Image px                      default = 700
+            'dpi': 150,             # Graph Resolution              default 150
+            'img_width': 700,       # Image px                      default 700
             
             # View Max Value Text
-            'value_text': True,
+            'value_text': False,    # View Max Value Text           default False
         },
         'x_axis': {
             'label': None,          # x axis label                  str
@@ -259,8 +259,9 @@ class drawChart:
                     'drop_columns': False, # Drop Column on Graph  True, False
                     'drop_columns_name': [''], # Drop Column Name  list[str]
                     'drop_column_axis': 0, # Drop Column Axis  0 - horizental, 1 - vertical
-                    'dpi': 150, # Graph Resolution  default = 150
-                    'img_width': 700 # Image px  default = 700
+                    'dpi': 150, # Graph Resolution  default 150
+                    'img_width': 700, # Image px  default 700
+                    'value_text': False, # View Max Value Text  default False
                 }
                 ```
             x_axis (dict): 
@@ -289,6 +290,7 @@ class drawChart:
                 ```
                 'overlay': {
                     'grid': True, # graph in grid background  True, False
+                    'legend': True, # graph on legend On / Off  True, False
                 }
                 ```
             legend (dict): 
@@ -296,7 +298,7 @@ class drawChart:
                 'legend': {
                     'title': None, # legend title  str
                     'labels': None, # legend label  columns
-                    'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
+                    'location': ''upper left', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
                     'fontsize': 7, # legend fontsize  int
                 }
                 ```
@@ -460,7 +462,7 @@ class drawChart:
             bar (dict):
                 ```
                 'bar': {
-                    'width': 1, # Bar Width  float over 0
+                    'width': 0.8, # Bar Width  float over 0
                     'colors': __SPLUNK_BASE_COLOR_MAP['categorical_2'], # Bar Colors  default on SPLUNK color map
                     'stack': True, # Bar values Stacked  True, False
                     'align': 'center', # Bar align  default center, edge
@@ -584,8 +586,9 @@ class drawChart:
                     'drop_columns': False, # Drop Column on Graph  True, False
                     'drop_columns_name': [''], # Drop Column Name  list[str]
                     'drop_column_axis': 0, # Drop Column Axis  0 - horizental, 1 - vertical
-                    'dpi': 150, # Graph Resolution  default = 150
-                    'img_width': 700 # Image px  default = 700
+                    'dpi': 150, # Graph Resolution  default 150
+                    'img_width': 700, # Image px  default 700
+                    'value_text': False, # View Max Value Text  default False
                 }
                 ```
             x_axis (dict): 
@@ -622,7 +625,7 @@ class drawChart:
                 'legend': {
                     'title': None, # legend title  str
                     'labels': None, # legend label  columns
-                    'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
+                    'location': ''upper left', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
                     'fontsize': 7, # legend fontsize  int
                 }
                 ```
@@ -631,7 +634,7 @@ class drawChart:
                 'line': {
                     'width': 1, # Line Width  float over 0
                     'style': '-', # Line Style  default = '-', '--' '-.' ':'
-                    'colors': None, # Line Colors  default following matplotlib colors    
+                    'colors': __SPLUNK_BASE_COLOR_MAP['base'], # Bar Colors  default on SPLUNK color map
                     'marker': 'o', # draw line on marker           
                     'marker_size': 5, # marker size
                 }
@@ -639,10 +642,10 @@ class drawChart:
             bar (dict):
                 ```
                 'bar': {
-                    'width': 1, # Bar Width  float over 0
-                    'colors': None, # Bar Colors  default following matplotlib colors    
+                    'width': 0.8, # Bar Width  float over 0
+                    'colors': __SPLUNK_BASE_COLOR_MAP['categorical_2'], # Bar Colors  default on SPLUNK color map
                     'stack': True, # Bar values Stacked  True, False
-                    'align': 'center', # Bar align  left, center, right
+                    'align': 'center', # Bar align  default center, edge
                 }
                 ```
             twin (dict):
@@ -651,9 +654,9 @@ class drawChart:
                     'twin': 'x', # Twin Axis  default x  y
                     'x_label': '', # Twin x label  str
                     'y_label': '', # Twin y label  str
-                    'x_min': None, # Twin x min value  float
+                    'x_min': 0, # Twin x min value  float
                     'x_max': None, # Twin x max value  float
-                    'y_min': None, # Twin y min value  float
+                    'y_min': 0, # Twin y min value  float
                     'y_max': None, # Twin y max value  float
                     'legend': 'upper right', # Second Legend location  default 'upper right'
                     'legend_fontsize': 7, # legend fontsize  int
@@ -816,9 +819,10 @@ class drawChart:
                     'flip': False, # Flip X-Y axis  True, False
                     'drop_columns': False, # Drop Column on Graph  True, False
                     'drop_columns_name': [''], # Drop Column Name  list[str]
-                    'drop_column_axis': 1, # Drop Column Axis  0 - horizental, 1 - vertical
-                    'dpi': 150, # Graph Resolution  default = 150
-                    'img_width': 700 # Image px  default = 700
+                    'drop_column_axis': 0, # Drop Column Axis  0 - horizental, 1 - vertical
+                    'dpi': 150, # Graph Resolution  default 150
+                    'img_width': 700, # Image px  default 700
+                    'value_text': False, # View Max Value Text  default False
                 }
                 ```
             overlay (dict): 
@@ -833,7 +837,7 @@ class drawChart:
                 'legend': {
                     'title': None, # legend title  str
                     'labels': None, # legend label  columns
-                    'location': 'best', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
+                    'location': ''upper left', # legend location  best, left, center, right, upper [left, center, right], lower [left, center, right]
                     'fontsize': 7, # legend fontsize  int
                 }
                 ```
@@ -845,11 +849,11 @@ class drawChart:
                     'startangle': 0, # Start point angle  default 0
                     'shadow': False, # Shadow On / Off  True, False
                     'radius': 1, # Pie Radius  float
-                    'colors': None, # Pie Colors  default following matplotlib colors    
-                    'wedge_width': 0.5, # Pie To Donut width  default 0.5  float
+                    'colors': __SPLUNK_BASE_COLOR_MAP['categorical_3'], # Pie Colors  default on SPLUNK color map
+                    'wedge_width': None, # Pie To Donut width  float
                     'wedge_edge_color': None, # Pie To Donut color  default following matplotlib colors 
                     'explode': None # Pie piece Explode  tuple[float]     **tuple len == explode len**
-                    'arrow': False, # Arrow option on / off  True, False
+                    'arrow': True, # Arrow option on / off  True, False
                 }
                 ```
         """
