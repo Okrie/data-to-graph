@@ -883,7 +883,13 @@ class drawChart:
         label_x = list(dfGraph.keys())
         
         # Total Column for Pie Chart 100%
-        totalYdata = [sum(float(value) for value in values[1:]) for key, values in dfGraph.items() if key != label_x[0]]
+        totalYdata = [sum(float(value) for value in values) for key, values in dfGraph.items() if key != label_x[0]]
+        
+        # label 개수가 2개 이하인 경우 단일 column의 값 기준으로 그래프 표시
+        checkLabelLength = len(label_x)
+        if checkLabelLength <= 2:
+            totalYdata = dfGraph.get(label_x[1])
+            label_x = [v for v in dfGraph[label_x[0]]]
         
         # Arrow Between PieGraph and the Label
         if pie['arrow']:
@@ -903,15 +909,18 @@ class drawChart:
             # Pie piece와 Label 간 선 연결
             for i, p in enumerate(wedges):
                 ang = (p.theta2 - p.theta1)/2. + p.theta1
+                
                 y_pos = np.sin(np.deg2rad(ang))
                 x_pos = np.cos(np.deg2rad(ang))
                 horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x_pos))]
                 
-                connectionstyle = f"angle,angleA=0,angleB={ang}"
+                # 180도 일 경우 직선으로 표기하기 위한 조건
+                connectionstyle = f"angle,angleA=0,angleB={ang}" if ang != 180.0 else "angle3,angleA=0,angleB=180"
+                
                 kw = dict(arrowprops=dict(arrowstyle="-", color=pie['colors'][i % len(pie['colors'])], linewidth=1.5), zorder=0, va="center")
                 kw["arrowprops"].update({"connectionstyle": connectionstyle})
                 
-                ax.annotate(label_x[i+1], xy=(x_pos, y_pos), xytext=(1.25*np.sign(x_pos), 1.3*y_pos),
+                ax.annotate(label_x[i+1] if checkLabelLength > 2 else label_x[i], xy=(x_pos, y_pos), xytext=(1.35*np.sign(x_pos), 1.4*y_pos),
                             horizontalalignment=horizontalalignment, **kw)
 
         else:
