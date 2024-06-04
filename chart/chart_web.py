@@ -29,6 +29,8 @@ elif platform.system() == 'Windows':
 else:
     print("Unknown System")
 
+# # prevent scientific notation
+# plt.ticklabel_format(style='plain', axis='y')
 
 class drawChart:
     """
@@ -126,7 +128,10 @@ class drawChart:
             
             # Graph resolution
             'dpi': 150,             # Graph Resolution              default = 150
-            'img_width': 700        # Image px                      default = 700
+            'img_width': 700,       # Image px                      default = 700
+            
+            # View Max Value Text
+            'value_text': True,
         },
         'x_axis': {
             'label': None,          # x axis label                  str
@@ -164,7 +169,7 @@ class drawChart:
             'marker_size': 5,       # marker size
         },
         'bar': {
-            'width': 1,             # Bar Width                     float over 0
+            'width': 0.8,             # Bar Width                     float over 0
             'colors': __SPLUNK_BASE_COLOR_MAP['categorical_2'], # Bar Colors    default on SPLUNK color map
             'stack': True,          # Bar values Stacked            True, False
             'align': 'center',          # Bar align                     center, edge
@@ -173,9 +178,9 @@ class drawChart:
             'twin': 'x',            # Twin Axis                     default x  y
             'x_label': '',          # Twin x label                  str
             'y_label': '',          # Twin y label                  str
-            'x_min': None,          # Twin x min value              float
+            'x_min': 0,          # Twin x min value              float
             'x_max': None,          # Twin x max value              float
-            'y_min': None,          # Twin y min value              float
+            'y_min': 0,          # Twin y min value              float
             'y_max': None,          # Twin y max value              float
             'legend': 'upper right',# Second Legend location        default 'upper left'
             'legend_fontsize': 7,   # legend fontsize               int
@@ -200,7 +205,7 @@ class drawChart:
         pass
     
     # 받은 데이터가 한개, 한개 이상일 때로 구분하여 dict(key: value(list)) 형태로 변경
-    def seperateJSONResult_json(self, originJsonData = None, index: str = None):
+    def seperateJSONResult_json(self, originJsonData = None):
         result_data = originJsonData
         
         if isinstance(result_data, dict):
@@ -217,10 +222,18 @@ class drawChart:
         return json_data
 
     # Graph를 그리기 위한 Data 정제 과정
-    def loadJsonDataToDict(self, jsondata: dict = None, index: str = None):
-        json_data = self.seperateJSONResult_json(jsondata, index)
+    def loadJsonDataToDict(self, jsondata: dict = None, delReservedWord: bool = True):
+        json_data = self.seperateJSONResult_json(jsondata)
         
         self._data.extend(json_data)
+        
+        # 예약어 삭제 '_span', '_spandays'
+        if delReservedWord:
+            columns = ['_span', '_spandays']
+            for col in columns:
+                for item in self._data:
+                    if col in item:
+                        del item[col]
 
         return self._data
     
@@ -342,12 +355,17 @@ class drawChart:
         label_x = list(dfGraph.keys())
         
         # x datas
-        x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
-        x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
+        try:
+            x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
+        except:
+            x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [x for x in dfGraph[label_x[0]]]
         
         for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
+            y_data = [float(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
+            
             ax.plot(
                 x_data,
                 y_data,
@@ -356,6 +374,12 @@ class drawChart:
                 lw= line['width'],
                 color=line['colors'][i % len(line['colors'])]
             )
+            
+            # View Max Value Text
+            if general['value_text']:
+                max_y = np.max(y_data)
+                max_x = y_data.index(max_y)
+                ax.text(max_x, max_y, f'{max_y}', ha='left', va='top')
         
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
@@ -486,16 +510,20 @@ class drawChart:
         label_x = list(dfGraph.keys())
         
         # x datas
-        x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
-        x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
+        try:
+            x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
+        except:
+            x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [x for x in dfGraph[label_x[0]]]
         
         bottom= [0 for _ in range(len(x))]
         
         for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
+            y_data = [float(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             ax.bar(
-                x_data,
+                x_data if (x_data != [None]) and (x_data != None) else label_x[0],
                 y_data,
                 lw= bar['width'],
                 color= bar['colors'][i % len(bar['colors'])],
@@ -506,6 +534,12 @@ class drawChart:
                 bottom = [ before + after for before, after in zip(bottom, y_data)]
             else:
                 bottom = 0
+                
+            # View Max Value Text
+            if general['value_text']:
+                max_y = np.max(y_data)
+                max_x = y_data.index(max_y)
+                ax.text(max_x, max_y, f'{max_y}', ha='left', va='top')
             
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
@@ -629,7 +663,7 @@ class drawChart:
         """
         updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
         
-        print(f'Option \n {updatedOption}')
+        # print(f'Option \n {updatedOption}')
         general = updatedOption['general']
         x_axis = updatedOption['x_axis']
         y_axis = updatedOption['y_axis']
@@ -657,22 +691,29 @@ class drawChart:
         # Draw Graph
         dfGraph = {key: [d[key] for d in data if key in d] for key in data[0].keys()}
         _, axBar = plt.subplots(figsize=general['fig_size'])
+        
+        # prevent scientific notation
+        plt.ticklabel_format(style='plain', axis='y')
 
         # Graph legend label
         label_x = list(dfGraph.keys())
         
         # x datas
-        x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
-        x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
-        
+        try:
+            x = [self.transformDatetype(index) for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [self.transformDatetype(x) for x in dfGraph[label_x[0]]]
+        except:
+            x = [index for index in dfGraph.get(list(dfGraph.keys())[0])]
+            x_data = [x for x in dfGraph[label_x[0]]]
+            
         bottom= [0 for _ in range(len(x))]
         
         # Bar Graph
         for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
+            y_data = [float(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             axBar.bar(
-                x_data,
+                x_data if (x_data != [None]) and (x_data != None) else label_x[0],
                 y_data,
                 lw= bar['width'],
                 color= bar['colors'][i % len(bar['colors'])],
@@ -683,7 +724,15 @@ class drawChart:
                 bottom = [ before + after for before, after in zip(bottom, y_data)]
             else:
                 bottom = 0
+                
+            # View Max Value Text
+            if general['value_text']:
+                max_y = np.max(y_data)
+                max_x = y_data.index(max_y)
+                axBar.text(max_x, max_y, f'{max_y}', ha='left', va='top')
         
+        print([v for _, v in dfGraph.items()])
+        # print(np.max([v for v in dfGraph.get(list(dfGraph.keys())[1:])]))
         plt.title(general['title'], loc='center')
         plt.xlim((x_axis['min'], x_axis['max']))
         plt.ylim((y_axis['min'], y_axis['max']))
@@ -703,10 +752,13 @@ class drawChart:
         # Twinx | Twiny
         axLine = axBar.twinx() if twin['twin'] == 'x' else axBar.twiny()
         
+        # prevent scientific notation
+        plt.ticklabel_format(style='plain', axis='y')
+        
         # Line Graph
         for i in range(1, len(label_x)):
             # y axis data
-            y_data = [int(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
+            y_data = [float(y) for y in dfGraph[label_x[i-1 if i == len(label_x) else i]]]
             axLine.plot(
                 x_data,
                 y_data,
@@ -715,6 +767,12 @@ class drawChart:
                 lw= line['width'],
                 color=line['colors'][i % len(line['colors'])],
             )
+            
+            # View Max Value Text
+            if general['value_text']:
+                max_y = np.max(y_data)
+                max_x = y_data.index(max_y)
+                axLine.text(max_x, max_y, f'{max_y}', ha='left', va='top')
         
         plt.xlim((twin['x_min'], twin['x_max']))
         plt.ylim((twin['y_min'], twin['y_max']))
@@ -795,7 +853,7 @@ class drawChart:
         """
         updatedOption = self.optionUpdate(self.DEFAULT_OPTION.copy(), option)
         
-        print(f'Option \n {updatedOption}')
+        # print(f'Option \n {updatedOption}')
         general = updatedOption['general']
         legend = updatedOption['legend']
         overlay = updatedOption['overlay']
@@ -824,7 +882,7 @@ class drawChart:
         label_x = list(dfGraph.keys())
         
         # Total Column for Pie Chart 100%
-        totalYdata = [sum(float(value) for value in values[1:]) for key, values in dfGraph.items() if key != label_x[0]]
+        totalYdata = [sum(float(value) for value in values) for key, values in dfGraph.items() if key != label_x[0]]
         
         # Arrow Between PieGraph and the Label
         if pie['arrow']:
