@@ -902,7 +902,7 @@ class drawChart:
             wedges, _, _ = ax.pie(
                 totalYdata,
                 autopct=pie['autopct'],
-                startangle=pie['startangle'],
+                startangle=pie['startangle'] if len(data) != 1 else -269.99,
                 explode=pie['explode'],
                 shadow=pie['shadow'],
                 colors=pie['colors'],
